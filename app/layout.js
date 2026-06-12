@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Providers } from "./providers";
 
 const SITE_URL = process.env.SITE_URL || "https://thewringer.ai";
 
@@ -37,7 +38,9 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
