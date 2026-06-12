@@ -1,10 +1,16 @@
+import fs from "fs";
+import path from "path";
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { buildPrompt } from "../../../../lib/protocol";
-import { HARNESS_SOURCE } from "../../../../lib/harness";
+import { RUNNER_SOURCE, MECHA_STRATEGIES } from "../../../../lib/mecha-runner";
 import { getDaytona } from "../../../../lib/daytona";
 
 const AUTO_STOP_MINUTES = 30;
+const MECHA_TARBALL_B64 = fs.readFileSync(
+  path.join(process.cwd(), "vendor", "mecha.tar.gz.b64"),
+  "utf8"
+);
 
 export async function POST(req) {
   const body = await req.json();
@@ -55,34 +61,43 @@ export async function POST(req) {
   try {
     const rootDir = (await sandbox.getUserRootDir()) || "/home/daytona";
     const runDir = `${rootDir.replace(/\/$/, "")}/wringer`;
-    const contract = { systemPrompt: buildPrompt(form), form };
 
-    const upload = async (path, content) => {
+    const upload = async (name, content) => {
       const b64 = Buffer.from(content, "utf8").toString("base64");
       const res = await sandbox.process.executeCommand(
-        `mkdir -p "${runDir}" && echo '${b64}' | base64 -d > "${runDir}/${path}"`
+        `mkdir -p "${runDir}" && echo '${b64}' | base64 -d > "${runDir}/${name}"`
       );
-      if (res.exitCode !== 0) throw new Error(`upload ${path} failed: ${res.result}`);
+      if (res.exitCode !== 0) throw new Error(`upload ${name} failed: ${res.result}`);
     };
-    await upload("contract.json", JSON.stringify(contract));
-    await upload("harness.js", HARNESS_SOURCE);
+    await upload("mecha.tar.gz.b64", MECHA_TARBALL_B64);
+    await upload("task.txt", buildPrompt(form));
+    await upload("runner.sh", RUNNER_SOURCE);
 
-    const model = form.mechaModel || process.env.MECHA_MODEL || "x-ai/grok-4.3";
+    const strategy = MECHA_STRATEGIES.includes(form.mechaStrategy)
+      ? form.mechaStrategy
+      : "triumvirate";
     const env = [
-      `WRINGER_DIR="${runDir}"`,
-      `WORKSPACE_DIR="${runDir}/work"`,
-      `MODEL="${String(model).replace(/[^a-zA-Z0-9/._:-]/g, "")}"`,
-      `MAX_ITER="${Math.min(parseInt(form.maxIterations || "30", 10) || 30, 60)}"`,
-      `COST_CEILING="${process.env.MECHA_COST_CEILING || "5"}"`,
+      `RUN_DIR="${runDir}"`,
+      `STRATEGY="${strategy}"`,
+      `MECHA_OPENROUTER_FORCE="1"`,
       `OPENROUTER_API_KEY="${process.env.OPENROUTER_API_KEY}"`,
-    ].join(" ");
+      process.env.XAI_API_KEY ? `XAI_API_KEY="${process.env.XAI_API_KEY}"` : "",
+      process.env.MECHA_OPENROUTER_CLAUDE_MODEL
+        ? `MECHA_OPENROUTER_CLAUDE_MODEL="${process.env.MECHA_OPENROUTER_CLAUDE_MODEL}"`
+        : "",
+      process.env.MECHA_OPENROUTER_CODEX_MODEL
+        ? `MECHA_OPENROUTER_CODEX_MODEL="${process.env.MECHA_OPENROUTER_CODEX_MODEL}"`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
     const start = await sandbox.process.executeCommand(
-      `${env} nohup node "${runDir}/harness.js" > "${runDir}/harness.log" 2>&1 & echo MECHA_STARTED`
+      `${env} nohup bash "${runDir}/runner.sh" > "${runDir}/runner.log" 2>&1 & echo MECHA_STARTED`
     );
     if (!String(start.result).includes("MECHA_STARTED")) {
       throw new Error(`start failed: ${start.result}`);
     }
-    return NextResponse.json({ runId: sandbox.id, model });
+    return NextResponse.json({ runId: sandbox.id, strategy });
   } catch (e) {
     try {
       await sandbox.delete();

@@ -16,13 +16,13 @@ export default function Home() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [running, setRunning] = useState(false);
-  const [mechaModel, setMechaModel] = useState("x-ai/grok-4.3");
+  const [mechaStrategy, setMechaStrategy] = useState("triumvirate");
   const [mechaProgress, setMechaProgress] = useState([]);
   const [mechaReport, setMechaReport] = useState(null);
 
   const formState = useCallback(
-    () => ({ goal, acs, nonGoals, maxIterations, preauthorized, mechaModel }),
-    [goal, acs, nonGoals, maxIterations, preauthorized, mechaModel]
+    () => ({ goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy }),
+    [goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy]
   );
 
   const runWithSession = useCallback(async (sessionId, form) => {
@@ -61,7 +61,7 @@ export default function Home() {
         setMechaProgress(data.progress || []);
         if (data.done && data.report) {
           setMechaReport(data.report);
-          setStatus(`MECHA RUN COMPLETE — exit ${data.report.exit_code} ${data.report.exit_name} · ${data.report.iterations} iterations · $${data.report.cost_usd} model cost`);
+          setStatus(`MECHA RUN COMPLETE — exit ${data.report.exit_code} ${data.report.exit_name} · ${data.report.strategy} · $${Number(data.report.cost_usd || 0).toFixed(4)} model cost`);
           setRunning(false);
           return;
         }
@@ -87,7 +87,7 @@ export default function Home() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "MECHA start failed");
-      setStatus(`MECHA RUN LIVE — ${data.model} executing in sandbox. This takes minutes, not seconds.`);
+      setStatus(`MECHA RUN LIVE — strategy ${data.strategy} fanning out in sandbox. This takes minutes, not seconds.`);
       pollMecha(data.runId, sessionId);
     } catch (e) {
       setError(e.message);
@@ -110,7 +110,7 @@ export default function Home() {
         setNonGoals(form.nonGoals || "");
         setMaxIterations(form.maxIterations || 30);
         setPreauthorized(form.preauthorized || "");
-        if (form.mechaModel) setMechaModel(form.mechaModel);
+        if (form.mechaStrategy) setMechaStrategy(form.mechaStrategy);
         window.history.replaceState({}, "", "/");
         if (tier === "mecha") startMecha(sessionId, form);
         else runWithSession(sessionId, form);
@@ -206,19 +206,22 @@ export default function Home() {
           {running ? <span className="blink">▮▮ IN THE WRINGER ▮▮</span> : "PUT IT THROUGH THE WRINGER — $1"}
         </button>
 
-        <label style={{ marginTop: "18px" }}>MECHA RUN model</label>
-        <select value={mechaModel} onChange={(e) => setMechaModel(e.target.value)}>
-          <option value="x-ai/grok-4.3">xAI grok-4.3</option>
-          <option value="anthropic/claude-sonnet-4.5">Claude sonnet-4.5</option>
-          <option value="openai/gpt-5.3-codex">OpenAI gpt-5.3-codex</option>
+        <label style={{ marginTop: "18px" }}>MECHA RUN strategy</label>
+        <select value={mechaStrategy} onChange={(e) => setMechaStrategy(e.target.value)}>
+          <option value="senate">senate — every backend answers, reviewer merges</option>
+          <option value="triumvirate">triumvirate — Claude + Codex + Grok + reviewer</option>
+          <option value="best-of-3">best-of-3 — three personas, reviewer picks</option>
+          <option value="solo-claude">solo-claude — Claude at max thinking</option>
+          <option value="solo-codex">solo-codex — Codex at max thinking</option>
+          <option value="frontier-coder">frontier-coder — TDD: test, implement, review</option>
         </select>
         <button className="btn-run" onClick={() => wringerRun("mecha")} disabled={running}>
           {running ? <span className="blink">▮▮ MECHA ENGAGED ▮▮</span> : "MECHA RUN — REAL EXECUTION — $10"}
         </button>
         <div className="sub" style={{ fontSize: "12px", marginTop: "6px" }}>
-          MECHA RUN actually executes your contract: a real agent with shell access in an isolated sandbox,
-          governed by the protocol harness — iteration caps, banned-repeat detection, hard cost ceiling.
-          Returns the final report + exit code. No fabricated SUCCESS.
+          MECHA RUN dispatches your contract to the real MECHA orchestrator in an isolated sandbox:
+          a swarm of worker agents (Claude, Codex, Grok lineages) fans out on your task and a reviewer
+          synthesizes the best answer. Returns the final report + exit code. No fabricated SUCCESS.
         </div>
         {status && <div className="status">{status}</div>}
         {error && <div className="status error">{error}</div>}
@@ -237,12 +240,13 @@ export default function Home() {
           <pre className="output">
             {mechaProgress
               .map((p) => {
-                if (p.type === "start") return `[BOOT] model=${p.model} max_iter=${p.max_iter} ceiling=$${p.ceiling}`;
-                if (p.type === "action") return `[${String(p.iter).padStart(2, "0")}] ${p.tool} ${p.summary || ""} ($${p.cost})`;
-                if (p.type === "text") return `[${String(p.iter).padStart(2, "0")}] THINK: ${p.text}`;
-                if (p.type === "error") return `[${String(p.iter).padStart(2, "0")}] ERROR: ${p.error}`;
-                if (p.type === "finish") return `[EXIT] code=${p.exit_code} ${p.exit_name}`;
-                return JSON.stringify(p);
+                if (p.kind === "run_start") return `[BOOT] ${p.run_id} strategy=${p.strategy}`;
+                if (p.kind === "strategy_start") return `[FANOUT] ${p.strategy} — ${p.workers} workers: ${(p.worker_list || []).map((w) => w.name).join(", ")}`;
+                if (p.kind === "worker_start") return `[WORKER] ${p.name} (${p.backend}) engaged`;
+                if (p.kind === "worker_done") return `[WORKER] ${p.name} ${p.error ? `FAILED: ${p.error}` : "answered"}`;
+                if (p.kind === "reviewer_start") return `[REVIEW] ${p.name} judging ${p.n_candidates} candidates`;
+                if (p.kind === "run_done") return `[DONE] cost=$${Number(p.cost_usd || 0).toFixed(4)} time=${Number(p.elapsed_s || 0).toFixed(1)}s${p.error ? ` error=${p.error}` : ""}`;
+                return `[${p.kind}] ${JSON.stringify({ ...p, ts: undefined, run_id: undefined })}`;
               })
               .join("\n")}
           </pre>

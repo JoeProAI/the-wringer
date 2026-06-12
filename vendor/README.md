@@ -1,0 +1,1 @@
+Vendored snapshot of https://github.com/JoeProAI/mecha @ aaa436ca1714a63ef7b4905709e85cba5d2b99cf (branch devin/1781270062-openrouter-backend, PR #1). Regenerate: tar czf mecha.tar.gz --exclude=__pycache__ --exclude=state --exclude='*.bak' --exclude=.git --transform 's,^,mecha/,' scripts bin README.md && base64 -w0 mecha.tar.gz > vendor/mecha.tar.gz.b64

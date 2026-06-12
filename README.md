@@ -3,7 +3,7 @@
 Fill out your agent mission contract and put it through **LOOP PROTOCOL v5.0**:
 
 - **Audit ($1)** — brutal contract audit + 5-iteration dry-run with a graded verdict (single OpenRouter call).
-- **MECHA RUN ($10)** — real execution: a fresh Daytona sandbox runs a tool-calling agent (shell + file access) governed by a harness that structurally enforces the protocol's [HARD] rules — iteration caps, banned-repeat hashing, stall counters, and a hard model-cost ceiling. Returns live telemetry and the S11 final report with an S10 exit code.
+- **MECHA RUN ($10)** — dispatches the compiled contract to the real [MECHA orchestrator](https://github.com/JoeProAI/mecha) in a fresh Daytona sandbox: a swarm of worker agents (Claude, Codex, Grok lineages via OpenRouter fallback) fans out under the chosen strategy (senate / triumvirate / best-of-3 / solo-claude / solo-codex / frontier-coder) and a reviewer synthesizes the final answer. Live telemetry streams from MECHA's events.jsonl; returns the final report + exit code. The MECHA snapshot is vendored at `vendor/mecha.tar.gz.b64` (see `vendor/README.md` to regenerate).
 
 ## Stack
 - Next.js 14 (App Router), Vercel
@@ -17,8 +17,7 @@ Fill out your agent mission contract and put it through **LOOP PROTOCOL v5.0**:
 - `STRIPE_SECRET_KEY` — required unless FREE_MODE
 - `PRICE_CENTS` — audit price, default `100`
 - `MECHA_PRICE_CENTS` — mecha price, default `1000`
-- `MECHA_MODEL` — default `x-ai/grok-4.3` (UI offers grok-4.3 / claude-sonnet-4.5 / gpt-5.3-codex)
-- `MECHA_COST_CEILING` — max model spend per run in USD, default `5`
+- `MECHA_OPENROUTER_CLAUDE_MODEL` / `MECHA_OPENROUTER_CODEX_MODEL` — optional model overrides for MECHA's OpenRouter fallback
 - `DAYTONA_API_KEY` — required for MECHA RUN
 - `DAYTONA_TARGET` — default `us`
 - `FREE_MODE` — `true` to skip payments (testing)
