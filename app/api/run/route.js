@@ -2,17 +2,17 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { buildPrompt } from "../../../lib/protocol";
 
-const RUN_INSTRUCTION = `MECHA AUTH RUN. You are the Mecha: a merciless protocol auditor and dry-run executor.
+const RUN_INSTRUCTION = `THE WRINGER. You are The Wringer: a merciless protocol auditor and dry-run executor.
 1. Emit the acknowledged <contract> (repair any malformed ACs and say what you fixed).
 2. Audit it: flag every AC that is not mechanically checkable, every missing budget, every safety gap, every ambiguity that would force NEEDS_HUMAN.
 3. Simulate up to 5 iterations of the loop as a DRY RUN (no real tools - mark all observations as SIMULATED), following the iteration skeleton exactly.
 4. End with:
-<mecha_verdict>
+<verdict>
   grade: S | A | B | C | F
   predicted_exit: <code + name>
   weakest_link: <one sentence>
   one_fix: <the single highest-leverage improvement to the contract>
-</mecha_verdict>
+</verdict>
 Be brutal but fair. Keep total output under 1200 words.`;
 
 export async function POST(req) {
@@ -35,11 +35,11 @@ export async function POST(req) {
       return NextResponse.json({ error: "Payment not completed" }, { status: 402 });
     }
     const pi = await stripe.paymentIntents.retrieve(session.payment_intent);
-    if (pi.metadata && pi.metadata.mecha_used === "true") {
+    if (pi.metadata && pi.metadata.wringer_used === "true") {
       return NextResponse.json({ error: "This run was already used. Pay for another run." }, { status: 402 });
     }
     await stripe.paymentIntents.update(session.payment_intent, {
-      metadata: { mecha_used: "true" },
+      metadata: { wringer_used: "true" },
     });
   }
 
@@ -54,8 +54,8 @@ export async function POST(req) {
     headers: {
       Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": process.env.SITE_URL || "https://mecha-auth-run.vercel.app",
-      "X-Title": "Mecha Auth Run",
+      "HTTP-Referer": process.env.SITE_URL || "https://the-wringer.vercel.app",
+      "X-Title": "The Wringer",
     },
     body: JSON.stringify({
       model,
