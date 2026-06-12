@@ -114,6 +114,7 @@ export default function Home() {
         window.history.replaceState({}, "", "/");
         if (tier === "mecha") startMecha(sessionId, form);
         else runWithSession(sessionId, form);
+        document.getElementById("results")?.scrollIntoView();
       }
     }
   }, [runWithSession, startMecha]);
@@ -126,7 +127,11 @@ export default function Home() {
 
   async function wringerRun(tier) {
     setError("");
-    if (!goal.trim()) return setError("Goal is required. The Wringer refuses vague missions.");
+    if (!goal.trim()) {
+      setError("Goal is required. The Wringer refuses vague missions.");
+      document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
     const form = formState();
     localStorage.setItem("wringer_form", JSON.stringify(form));
     setRunning(true);
@@ -158,121 +163,182 @@ export default function Home() {
   }
 
   const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-    "I just put my agent task through The Wringer (Loop Protocol v5.0). It auto-repaired my acceptance criteria and graded the whole contract. Brutal."
-  )}&url=${encodeURIComponent("https://the-wringer.vercel.app")}`;
+    "I just put my agent task through The Wringer. It auto-repaired my acceptance criteria and graded the whole contract. Brutal."
+  )}&url=${encodeURIComponent("https://thewringer.ai")}`;
 
   return (
-    <main className="wrap">
-      <h1>THE WRINGER</h1>
-      <p className="sub">
-        Write down what you actually want your agent to do. The Wringer compiles it into LOOP PROTOCOL v5.0,
-        audits it, dry-runs it, and grades it — before you burn real agent hours on a vague spec.
-        Honest failure outranks fabricated success. Always.
-      </p>
-
-      <div className="panel">
-        <h2>// Your Contract</h2>
-        <label>Goal (one sentence — what must be true when the agent stops)</label>
-        <textarea value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Ship a working /healthz endpoint that returns 200 with build SHA" />
-
-        <label>Acceptance Criteria (each must be mechanically checkable)</label>
-        {acs.map((ac, i) => (
-          <div className="ac-row" key={i}>
-            <select value={ac.kind} onChange={(e) => setAcs(acs.map((a, j) => (j === i ? { ...a, kind: e.target.value } : a)))}>
-              <option value="AUTO">AUTO</option>
-              <option value="HUMAN">HUMAN</option>
-            </select>
-            <input value={ac.text} placeholder={`AC-${i + 1}: e.g. curl /healthz returns 200 and body contains the git SHA`} onChange={(e) => setAcs(acs.map((a, j) => (j === i ? { ...a, text: e.target.value } : a)))} />
-            <button className="btn-ghost" onClick={() => setAcs(acs.filter((_, j) => j !== i))} disabled={acs.length === 1}>✕</button>
+    <main>
+      {/* HERO */}
+      <section className="hero">
+        <div className="hero-bg" />
+        <div className="hero-inner">
+          <span className="hero-kicker mono">Loop Protocol v5.0 · No fabricated SUCCESS</span>
+          <h1>
+            The
+            <br />
+            <span className="red">Wringer</span>
+          </h1>
+          <p className="hero-sub">
+            Most agent tasks fail before the agent even starts — vague goals, unverifiable criteria,
+            no safety gates. Write yours down, and The Wringer will press it flat: audit it for $1,
+            or execute it for real through a multi-agent swarm for $10.
+          </p>
+          <div className="hero-ctas">
+            <a className="btn-stamp" href="#work-order">Put it through the press</a>
+            <a className="btn-outline" href="#how">How it works</a>
           </div>
-        ))}
-        <button className="btn-ghost" onClick={() => setAcs([...acs, { ...EMPTY_AC }])}>+ ADD CRITERION</button>
-
-        <label>Non-goals (explicitly out of scope)</label>
-        <input value={nonGoals} onChange={(e) => setNonGoals(e.target.value)} placeholder="No refactors, no dependency upgrades, no prod deploys" />
-
-        <label>Max iterations</label>
-        <input type="number" min="5" max="100" value={maxIterations} onChange={(e) => setMaxIterations(parseInt(e.target.value || "30", 10))} />
-
-        <label>Preauthorized irreversible / outward actions (verbatim, or leave empty)</label>
-        <input value={preauthorized} onChange={(e) => setPreauthorized(e.target.value)} placeholder='e.g. "git push origin feature-branch"' />
-
-        <div className="row">
-          <button className="btn-ghost" onClick={compile}>COMPILE CONTRACT</button>
-          {contract && <button className="btn-ghost" onClick={() => copy(buildPrompt(formState()), "Full protocol prompt")}>COPY FULL PROMPT</button>}
         </div>
+      </section>
 
-        <button className="btn-run" onClick={() => wringerRun("audit")} disabled={running}>
-          {running ? <span className="blink">▮▮ IN THE WRINGER ▮▮</span> : "PUT IT THROUGH THE WRINGER — $1"}
-        </button>
-
-        <label style={{ marginTop: "18px" }}>MECHA RUN strategy</label>
-        <select value={mechaStrategy} onChange={(e) => setMechaStrategy(e.target.value)}>
-          <option value="senate">senate — every backend answers, reviewer merges</option>
-          <option value="triumvirate">triumvirate — Claude + Codex + Grok + reviewer</option>
-          <option value="best-of-3">best-of-3 — three personas, reviewer picks</option>
-          <option value="solo-claude">solo-claude — Claude at max thinking</option>
-          <option value="solo-codex">solo-codex — Codex at max thinking</option>
-          <option value="frontier-coder">frontier-coder — TDD: test, implement, review</option>
-        </select>
-        <button className="btn-run" onClick={() => wringerRun("mecha")} disabled={running}>
-          {running ? <span className="blink">▮▮ MECHA ENGAGED ▮▮</span> : "MECHA RUN — REAL EXECUTION — $10"}
-        </button>
-        <div className="sub" style={{ fontSize: "12px", marginTop: "6px" }}>
-          MECHA RUN dispatches your contract to the real MECHA orchestrator in an isolated sandbox:
-          a swarm of worker agents (Claude, Codex, Grok lineages) fans out on your task and a reviewer
-          synthesizes the best answer. Returns the final report + exit code. No fabricated SUCCESS.
+      {/* STEPS */}
+      <section className="steps" id="how">
+        <div className="steps-inner">
+          <div className="step">
+            <div className="num">Step 01</div>
+            <h3>Write the work order</h3>
+            <p>One-sentence goal, mechanically checkable acceptance criteria, explicit non-goals. The form forces precision.</p>
+          </div>
+          <div className="step">
+            <div className="num">Step 02</div>
+            <h3>Through the press</h3>
+            <p>$1 — a brutal audit + 5-iteration dry-run grades your contract. $10 — the real MECHA orchestrator executes it: Claude, Codex, and Grok fan out in an isolated sandbox, a reviewer synthesizes.</p>
+          </div>
+          <div className="step">
+            <div className="num">Step 03</div>
+            <h3>Get the verdict</h3>
+            <p>A graded verdict or a final report with a real exit code and model cost. Honest failure outranks fabricated success. Always.</p>
+          </div>
         </div>
-        {status && <div className="status">{status}</div>}
-        {error && <div className="status error">{error}</div>}
-      </div>
+      </section>
 
-      {contract && (
-        <div className="panel">
-          <h2>// Compiled Contract</h2>
-          <pre className="output">{contract}</pre>
-        </div>
-      )}
+      {/* WORK ORDER + TIERS */}
+      <section className="shop" id="work-order">
+        <div className="ticket">
+          <div className="ticket-head">
+            <h2>Work Order</h2>
+            <span className="no">FORM W-1 · LOOP PROTOCOL v5.0</span>
+          </div>
 
-      {(mechaProgress.length > 0 || mechaReport) && (
-        <div className="panel">
-          <h2>// MECHA RUN Telemetry</h2>
-          <pre className="output">
-            {mechaProgress
-              .map((p) => {
-                if (p.kind === "run_start") return `[BOOT] ${p.run_id} strategy=${p.strategy}`;
-                if (p.kind === "strategy_start") return `[FANOUT] ${p.strategy} — ${p.workers} workers: ${(p.worker_list || []).map((w) => w.name).join(", ")}`;
-                if (p.kind === "worker_start") return `[WORKER] ${p.name} (${p.backend}) engaged`;
-                if (p.kind === "worker_done") return `[WORKER] ${p.name} ${p.error ? `FAILED: ${p.error}` : "answered"}`;
-                if (p.kind === "reviewer_start") return `[REVIEW] ${p.name} judging ${p.n_candidates} candidates`;
-                if (p.kind === "run_done") return `[DONE] cost=$${Number(p.cost_usd || 0).toFixed(4)} time=${Number(p.elapsed_s || 0).toFixed(1)}s${p.error ? ` error=${p.error}` : ""}`;
-                return `[${p.kind}] ${JSON.stringify({ ...p, ts: undefined, run_id: undefined })}`;
-              })
-              .join("\n")}
-          </pre>
-          {mechaReport && (
-            <>
-              <h2>// MECHA Final Report — exit {mechaReport.exit_code} {mechaReport.exit_name}</h2>
-              <pre className="output">{mechaReport.report}</pre>
-              <div className="row">
-                <button className="btn-ghost" onClick={() => copy(mechaReport.report, "Final report")}>COPY REPORT</button>
-                <a className="btn-ghost" style={{ textDecoration: "none", padding: "8px 14px" }} href={shareUrl} target="_blank" rel="noreferrer">SHARE ON X</a>
-              </div>
-            </>
-          )}
-        </div>
-      )}
+          <label>Goal (one sentence — what must be true when the agent stops)</label>
+          <textarea value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Ship a working /healthz endpoint that returns 200 with build SHA" />
 
-      {output && (
-        <div className="panel">
-          <h2>// The Verdict</h2>
-          <pre className="output">{output}</pre>
+          <label>Acceptance Criteria (each must be mechanically checkable)</label>
+          {acs.map((ac, i) => (
+            <div className="ac-row" key={i}>
+              <select value={ac.kind} onChange={(e) => setAcs(acs.map((a, j) => (j === i ? { ...a, kind: e.target.value } : a)))}>
+                <option value="AUTO">AUTO</option>
+                <option value="HUMAN">HUMAN</option>
+              </select>
+              <input value={ac.text} placeholder={`AC-${i + 1}: e.g. curl /healthz returns 200 and body contains the git SHA`} onChange={(e) => setAcs(acs.map((a, j) => (j === i ? { ...a, text: e.target.value } : a)))} />
+              <button className="btn-ghost" onClick={() => setAcs(acs.filter((_, j) => j !== i))} disabled={acs.length === 1}>✕</button>
+            </div>
+          ))}
+          <button className="btn-ghost" onClick={() => setAcs([...acs, { ...EMPTY_AC }])}>+ Add criterion</button>
+
+          <label>Non-goals (explicitly out of scope)</label>
+          <input value={nonGoals} onChange={(e) => setNonGoals(e.target.value)} placeholder="No refactors, no dependency upgrades, no prod deploys" />
+
+          <label>Max iterations</label>
+          <input type="number" min="5" max="100" value={maxIterations} onChange={(e) => setMaxIterations(parseInt(e.target.value || "30", 10))} />
+
+          <label>Preauthorized irreversible / outward actions (verbatim, or leave empty)</label>
+          <input value={preauthorized} onChange={(e) => setPreauthorized(e.target.value)} placeholder='e.g. "git push origin feature-branch"' />
+
           <div className="row">
-            <button className="btn-ghost" onClick={() => copy(output, "Verdict")}>COPY VERDICT</button>
-            <a className="btn-ghost" style={{ textDecoration: "none", padding: "8px 14px" }} href={shareUrl} target="_blank" rel="noreferrer">SHARE ON X</a>
+            <button className="btn-ghost" onClick={compile}>Compile contract</button>
+            {contract && <button className="btn-ghost" onClick={() => copy(buildPrompt(formState()), "Full protocol prompt")}>Copy full prompt</button>}
           </div>
+          {status && <div className="status">{status}</div>}
+          {error && <div className="status error">{error}</div>}
         </div>
-      )}
+
+        <aside className="tiers">
+          <div className="tier">
+            <div className="price">$1</div>
+            <h3>The Audit</h3>
+            <p>
+              Your contract gets compiled into Loop Protocol v5.0, audited, dry-run for 5 iterations,
+              and graded. Weak criteria get repaired. Instant.
+            </p>
+            <button className="btn-stamp" onClick={() => wringerRun("audit")} disabled={running}>
+              {running ? <span className="blink">In the wringer…</span> : "Put it through — $1"}
+            </button>
+          </div>
+
+          <div className="tier feature">
+            <div className="price">$10</div>
+            <h3>MECHA Run</h3>
+            <p>
+              Real execution, not a dry-run. The MECHA orchestrator dispatches your contract to a swarm of
+              worker agents — Claude, Codex, Grok lineages — in an isolated sandbox. A reviewer synthesizes
+              the best answer. Final report + exit code.
+            </p>
+            <label>Strategy</label>
+            <select value={mechaStrategy} onChange={(e) => setMechaStrategy(e.target.value)}>
+              <option value="senate">senate — every backend answers, reviewer merges</option>
+              <option value="triumvirate">triumvirate — Claude + Codex + Grok + reviewer</option>
+              <option value="best-of-3">best-of-3 — three personas, reviewer picks</option>
+              <option value="solo-claude">solo-claude — Claude at max thinking</option>
+              <option value="solo-codex">solo-codex — Codex at max thinking</option>
+              <option value="frontier-coder">frontier-coder — TDD: test, implement, review</option>
+            </select>
+            <div style={{ height: 16 }} />
+            <button className="btn-stamp" onClick={() => wringerRun("mecha")} disabled={running}>
+              {running ? <span className="blink">MECHA engaged…</span> : "MECHA Run — $10"}
+            </button>
+          </div>
+        </aside>
+      </section>
+
+      {/* RESULTS */}
+      <section className="results" id="results">
+        {contract && (
+          <div className="panel">
+            <h2>Compiled Contract</h2>
+            <pre className="output">{contract}</pre>
+          </div>
+        )}
+
+        {(mechaProgress.length > 0 || mechaReport) && (
+          <div className="panel">
+            <h2>MECHA Run Telemetry</h2>
+            <pre className="output">
+              {mechaProgress
+                .map((p) => {
+                  if (p.kind === "run_start") return `[BOOT] ${p.run_id} strategy=${p.strategy}`;
+                  if (p.kind === "strategy_start") return `[FANOUT] ${p.strategy} — ${p.workers} workers: ${(p.worker_list || []).map((w) => w.name).join(", ")}`;
+                  if (p.kind === "worker_start") return `[WORKER] ${p.name} (${p.backend}) engaged`;
+                  if (p.kind === "worker_done") return `[WORKER] ${p.name} ${p.error ? `FAILED: ${p.error}` : "answered"}`;
+                  if (p.kind === "reviewer_start") return `[REVIEW] ${p.name} judging ${p.n_candidates} candidates`;
+                  if (p.kind === "run_done") return `[DONE] cost=$${Number(p.cost_usd || 0).toFixed(4)} time=${Number(p.elapsed_s || 0).toFixed(1)}s${p.error ? ` error=${p.error}` : ""}`;
+                  return `[${p.kind}] ${JSON.stringify({ ...p, ts: undefined, run_id: undefined })}`;
+                })
+                .join("\n")}
+            </pre>
+            {mechaReport && (
+              <>
+                <h2 style={{ marginTop: 22 }}>MECHA Final Report — exit {mechaReport.exit_code} {mechaReport.exit_name}</h2>
+                <pre className="output">{mechaReport.report}</pre>
+                <div className="row">
+                  <button className="btn-ghost" onClick={() => copy(mechaReport.report, "Final report")}>Copy report</button>
+                  <a className="btn-ghost" style={{ textDecoration: "none", padding: "8px 14px" }} href={shareUrl} target="_blank" rel="noreferrer">Share on X</a>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {output && (
+          <div className="panel">
+            <h2>The Verdict</h2>
+            <pre className="output">{output}</pre>
+            <div className="row">
+              <button className="btn-ghost" onClick={() => copy(output, "Verdict")}>Copy verdict</button>
+              <a className="btn-ghost" style={{ textDecoration: "none", padding: "8px 14px" }} href={shareUrl} target="_blank" rel="noreferrer">Share on X</a>
+            </div>
+          </div>
+        )}
+      </section>
 
       <div className="footer">
         LOOP PROTOCOL v5.0 — built by <a href="https://x.com/JoePro" target="_blank" rel="noreferrer">@JoePro</a> × Devin.
