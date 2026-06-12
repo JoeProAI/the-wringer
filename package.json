@@ -1,5 +1,5 @@
 {
-  "name": "mecha-auth-run",
+  "name": "the-wringer",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@daytonaio/sdk": "^0.187.0",
     "next": "14.2.21",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
