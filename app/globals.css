@@ -43,7 +43,7 @@ body {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background: url("/hero-press.png") center right / cover no-repeat;
+  background: url("/hero-press.webp") center right / cover no-repeat;
 }
 .hero-bg::after {
   content: "";

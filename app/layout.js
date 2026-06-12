@@ -15,13 +15,13 @@ export const metadata = {
     url: SITE_URL,
     siteName: "The Wringer",
     type: "website",
-    images: [{ url: "/og-card.png", width: 1536, height: 1024, alt: "The Wringer — put your agent task through the press" }],
+    images: [{ url: "/og-card.jpg", width: 1536, height: 1024, alt: "The Wringer — put your agent task through the press" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "The Wringer",
     description: "Put your agent task through the press. $1 audit, $10 real multi-agent execution.",
-    images: ["/og-card.png"],
+    images: ["/og-card.jpg"],
     creator: "@JoePro",
   },
 };
