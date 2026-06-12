@@ -29,6 +29,8 @@ export async function POST(req) {
         };
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
+    allow_promotion_codes: true,
+    metadata: { wringer_tier: tier },
     line_items: [
       {
         price_data: {

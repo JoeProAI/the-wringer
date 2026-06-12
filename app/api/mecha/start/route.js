@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
-import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { buildPrompt } from "../../../../lib/protocol";
+import { verifyAndConsume } from "../../../../lib/verify-payment";
 import { RUNNER_SOURCE, MECHA_STRATEGIES } from "../../../../lib/mecha-runner";
 import { getDaytona } from "../../../../lib/daytona";
 
@@ -20,27 +20,8 @@ export async function POST(req) {
   }
 
   if (process.env.FREE_MODE !== "true") {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
-    }
-    if (!sessionId) {
-      return NextResponse.json({ error: "Payment required" }, { status: 402 });
-    }
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    if (session.payment_status !== "paid") {
-      return NextResponse.json({ error: "Payment not completed" }, { status: 402 });
-    }
-    const pi = await stripe.paymentIntents.retrieve(session.payment_intent);
-    if (pi.metadata?.wringer_tier !== "mecha") {
-      return NextResponse.json({ error: "This payment is for the audit tier, not MECHA RUN." }, { status: 402 });
-    }
-    if (pi.metadata?.wringer_used === "true") {
-      return NextResponse.json({ error: "This run was already used. Pay for another run." }, { status: 402 });
-    }
-    await stripe.paymentIntents.update(session.payment_intent, {
-      metadata: { wringer_used: "true", wringer_tier: "mecha" },
-    });
+    const fail = await verifyAndConsume(sessionId, "mecha");
+    if (fail) return NextResponse.json({ error: fail.error }, { status: fail.status });
   }
 
   if (!process.env.OPENROUTER_API_KEY) {

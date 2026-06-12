@@ -250,6 +250,7 @@ textarea { resize: vertical; min-height: 64px; }
 .tier p { font-size: 13.5px; color: var(--paper-mut); margin: 0 0 16px; }
 .tier .btn-stamp { width: 100%; text-align: center; font-size: 17px; padding: 14px 10px; }
 .tier label { color: var(--paper-mut); }
+.tier .promo-hint { font-size: 11.5px; color: var(--paper-mut); margin: 10px 0 0; font-style: italic; }
 .tier select { background: var(--ink); color: var(--paper); border-color: var(--line); }
 
 /* ---------- OUTPUT PANELS ---------- */

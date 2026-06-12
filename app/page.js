@@ -263,6 +263,7 @@ export default function Home() {
             <button className="btn-stamp" onClick={() => wringerRun("audit")} disabled={running}>
               {running ? <span className="blink">In the wringer…</span> : "Put it through — $1"}
             </button>
+            <p className="promo-hint">Have a press pass code? Enter it at checkout.</p>
           </div>
 
           <div className="tier feature">
@@ -286,6 +287,7 @@ export default function Home() {
             <button className="btn-stamp" onClick={() => wringerRun("mecha")} disabled={running}>
               {running ? <span className="blink">MECHA engaged…</span> : "MECHA Run — $10"}
             </button>
+            <p className="promo-hint">Press pass codes work here too.</p>
           </div>
         </aside>
       </section>

@@ -1,6 +1,6 @@
-import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { buildPrompt } from "../../../lib/protocol";
+import { verifyAndConsume } from "../../../lib/verify-payment";
 
 const RUN_INSTRUCTION = `THE WRINGER. You are The Wringer: a merciless protocol auditor and dry-run executor.
 1. Emit the acknowledged <contract> (repair any malformed ACs and say what you fixed).
@@ -23,24 +23,8 @@ export async function POST(req) {
   }
 
   if (process.env.FREE_MODE !== "true") {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return NextResponse.json({ error: "Stripe not configured" }, { status: 500 });
-    }
-    if (!sessionId) {
-      return NextResponse.json({ error: "Payment required" }, { status: 402 });
-    }
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    if (session.payment_status !== "paid") {
-      return NextResponse.json({ error: "Payment not completed" }, { status: 402 });
-    }
-    const pi = await stripe.paymentIntents.retrieve(session.payment_intent);
-    if (pi.metadata && pi.metadata.wringer_used === "true") {
-      return NextResponse.json({ error: "This run was already used. Pay for another run." }, { status: 402 });
-    }
-    await stripe.paymentIntents.update(session.payment_intent, {
-      metadata: { wringer_used: "true" },
-    });
+    const fail = await verifyAndConsume(sessionId, "audit");
+    if (fail) return NextResponse.json({ error: fail.error }, { status: fail.status });
   }
 
   if (!process.env.OPENROUTER_API_KEY) {
