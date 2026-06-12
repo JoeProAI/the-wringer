@@ -15,7 +15,7 @@ export const metadata = {
     url: SITE_URL,
     siteName: "The Wringer",
     type: "website",
-    images: [{ url: "/og-card.jpg", width: 1536, height: 1024, alt: "The Wringer — put your agent task through the press" }],
+    images: [{ url: "/og-card.jpg", width: 1200, height: 630, alt: "The Wringer — put your agent task through the press" }],
   },
   twitter: {
     card: "summary_large_image",
