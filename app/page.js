@@ -331,6 +331,8 @@ export default function Home() {
                   if (p.kind === "run_done") return `[DONE] cost=$${Number(p.cost_usd || 0).toFixed(4)} time=${Number(p.elapsed_s || 0).toFixed(1)}s${p.error ? ` error=${p.error}` : ""}`;
                   if (p.kind === "gamma_start") return `[GAMMA] compiling HQ report (${p.model}) — worth the wait`;
                   if (p.kind === "gamma_done") return p.ok ? `[GAMMA] HQ report ready · $${Number(p.cost_usd || 0).toFixed(4)} · ${Number(p.elapsed_s || 0).toFixed(1)}s` : `[GAMMA] skipped: ${p.error}`;
+                  if (p.kind === "gamma_presentation_start") return `[GAMMA] generating HD presentation (gamma.app)`;
+                  if (p.kind === "gamma_presentation_done") return p.ok ? `[GAMMA] HD presentation ready · ${Number(p.elapsed_s || 0).toFixed(1)}s` : `[GAMMA] presentation skipped: ${p.error || "timeout"}`;
                   return `[${p.kind}] ${JSON.stringify({ ...p, ts: undefined, run_id: undefined })}`;
                 })
                 .join("\n")}
@@ -355,6 +357,12 @@ export default function Home() {
                     <pre className="output">{mechaReport.gamma}</pre>
                     <div className="row">
                       <button className="btn-ghost" onClick={() => copy(mechaReport.gamma, "GAMMA report")}>Copy GAMMA report</button>
+                      {mechaReport.gamma_presentation_url && (
+                        <a href={mechaReport.gamma_presentation_url} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ textDecoration: "none" }}>View HD Presentation</a>
+                      )}
+                      {mechaReport.gamma_export_url && (
+                        <a href={mechaReport.gamma_export_url} target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ textDecoration: "none" }}>Download PDF</a>
+                      )}
                     </div>
                   </div>
                 )}

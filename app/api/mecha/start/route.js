@@ -69,6 +69,9 @@ export async function POST(req) {
       process.env.MECHA_OPENROUTER_CODEX_MODEL
         ? `MECHA_OPENROUTER_CODEX_MODEL="${process.env.MECHA_OPENROUTER_CODEX_MODEL}"`
         : "",
+      process.env.GAMMA_APP_API_KEY
+        ? `GAMMA_APP_API_KEY="${process.env.GAMMA_APP_API_KEY}"`
+        : "",
     ]
       .filter(Boolean)
       .join(" ");
