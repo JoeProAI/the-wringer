@@ -22,4 +22,6 @@ Fill out your agent mission contract and put it through **LOOP PROTOCOL v5.0**:
 - `DAYTONA_TARGET` — default `us`
 - `FREE_MODE` — `true` to skip payments (testing)
 - `SITE_URL` — canonical URL
+- `NEXT_PUBLIC_POSTHOG_KEY` — PostHog project API key (analytics disabled if unset)
+- `NEXT_PUBLIC_POSTHOG_HOST` — default `https://us.i.posthog.com`
 

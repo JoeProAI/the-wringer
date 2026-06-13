@@ -1,4 +1,5 @@
 import "./globals.css";
+import { Providers } from "./providers";
 
 const SITE_URL = process.env.SITE_URL || "https://thewringer.ai";
 
@@ -15,7 +16,7 @@ export const metadata = {
     url: SITE_URL,
     siteName: "The Wringer",
     type: "website",
-    images: [{ url: "/og-card.jpg", width: 1536, height: 1024, alt: "The Wringer — put your agent task through the press" }],
+    images: [{ url: "/og-card.jpg", width: 1200, height: 630, alt: "The Wringer — put your agent task through the press" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -37,7 +38,9 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
