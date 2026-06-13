@@ -162,6 +162,21 @@ export default function Home() {
     setStatus(`${label} copied to clipboard.`);
   }
 
+  // Reviewer's "winner" counts only non-failed candidates; map it back to the
+  // full candidates array.
+  const mechaWinnerIdx = (() => {
+    if (!mechaReport?.winner || !mechaReport.candidates) return -1;
+    let n = 0;
+    for (let i = 0; i < mechaReport.candidates.length; i++) {
+      const c = mechaReport.candidates[i];
+      if (c.text && !c.error) {
+        n++;
+        if (n === mechaReport.winner) return i;
+      }
+    }
+    return -1;
+  })();
+
   const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
     "I just put my agent task through The Wringer. It auto-repaired my acceptance criteria and graded the whole contract. Brutal."
   )}&url=${encodeURIComponent("https://thewringer.ai")}`;
@@ -308,7 +323,7 @@ export default function Home() {
               {mechaProgress
                 .map((p) => {
                   if (p.kind === "run_start") return `[BOOT] ${p.run_id} strategy=${p.strategy}`;
-                  if (p.kind === "strategy_start") return `[FANOUT] ${p.strategy} — ${p.workers} workers: ${(p.worker_list || []).map((w) => w.name).join(", ")}`;
+                  if (p.kind === "strategy_start") return `[FANOUT] ${p.strategy} — ${p.workers ?? (p.worker_list || []).length} workers: ${(p.worker_list || []).map((w) => w.name).join(", ")}`;
                   if (p.kind === "worker_start") return `[WORKER] ${p.name} (${p.backend}) engaged`;
                   if (p.kind === "worker_done") return `[WORKER] ${p.name} ${p.error ? `FAILED: ${p.error}` : "answered"}`;
                   if (p.kind === "reviewer_start") return `[REVIEW] ${p.name} judging ${p.n_candidates} candidates`;
@@ -320,9 +335,56 @@ export default function Home() {
             {mechaReport && (
               <>
                 <h2 style={{ marginTop: 22 }}>MECHA Final Report — exit {mechaReport.exit_code} {mechaReport.exit_name}</h2>
+                <div className="mecha-stats mono">
+                  <span className="stat">strategy {mechaReport.strategy}</span>
+                  <span className="stat">model cost ${Number(mechaReport.cost_usd || 0).toFixed(4)}</span>
+                  <span className="stat">{Number(mechaReport.elapsed_s || 0).toFixed(1)}s</span>
+                  {(mechaReport.total_input_tokens || mechaReport.total_output_tokens) ? (
+                    <span className="stat">{mechaReport.total_input_tokens || 0} tok in / {mechaReport.total_output_tokens || 0} tok out</span>
+                  ) : null}
+                  {mechaReport.run_id && <span className="stat">{mechaReport.run_id}</span>}
+                </div>
+                {mechaReport.reviewer && (
+                  <div className="verdict">
+                    <div className="verdict-head mono">
+                      {mechaReport.reviewer.name || "Reviewer"} verdict
+                      {mechaReport.winner ? ` — winner: candidate ${mechaReport.winner}${mechaWinnerIdx >= 0 ? ` (${mechaReport.candidates[mechaWinnerIdx].name})` : ""}` : ""}
+                      {mechaReport.confidence != null ? ` · confidence ${mechaReport.confidence}` : ""}
+                    </div>
+                    <pre className="output">{mechaReport.reviewer.text || mechaReport.reviewer.error || "(no reviewer output)"}</pre>
+                  </div>
+                )}
                 <pre className="output">{mechaReport.report}</pre>
+                {mechaReport.candidates?.length > 0 && (
+                  <>
+                    <h2 style={{ marginTop: 22 }}>Worker Candidates — full evidence chain</h2>
+                    {mechaReport.candidates.map((c, i) => (
+                      <details className="worker" key={i} open={mechaWinnerIdx === i}>
+                        <summary className="mono">
+                          {mechaWinnerIdx === i ? "★ " : ""}Candidate {i + 1} · {c.name} ({c.backend}){" "}
+                          {c.error
+                            ? `— FAILED: ${c.error}`
+                            : `— ${c.output_tokens || 0} tok out · $${Number(c.cost_usd || 0).toFixed(4)} · ${Number(c.elapsed_s || 0).toFixed(1)}s`}
+                        </summary>
+                        <pre className="output">{c.text || "(no output)"}</pre>
+                      </details>
+                    ))}
+                  </>
+                )}
+                {mechaReport.artifacts?.length > 0 && (
+                  <>
+                    <h2 style={{ marginTop: 22 }}>Workspace Artifacts</h2>
+                    {mechaReport.artifacts.map((a, i) => (
+                      <details className="worker" key={i}>
+                        <summary className="mono">{a.path}</summary>
+                        <pre className="output">{a.content}</pre>
+                      </details>
+                    ))}
+                  </>
+                )}
                 <div className="row">
                   <button className="btn-ghost" onClick={() => copy(mechaReport.report, "Final report")}>Copy report</button>
+                  <button className="btn-ghost" onClick={() => copy(JSON.stringify(mechaReport, null, 2), "Full run record (JSON)")}>Copy full run JSON</button>
                   <a className="btn-ghost" style={{ textDecoration: "none", padding: "8px 14px" }} href={shareUrl} target="_blank" rel="noreferrer">Share on X</a>
                 </div>
               </>

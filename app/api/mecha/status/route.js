@@ -36,10 +36,9 @@ export async function POST(req) {
   const rootDir = (await sandbox.getUserRootDir()) || "/home/daytona";
   const runDir = `${rootDir.replace(/\/$/, "")}/wringer`;
   const res = await sandbox.process.executeCommand(
-    `tail -n 40 "${runDir}/mecha/state/events.jsonl" 2>/dev/null; echo "---WRINGER-REPORT---"; cat "${runDir}/report.json" 2>/dev/null`
+    `tail -n 60 "${runDir}/mecha/state/events.jsonl" 2>/dev/null`
   );
-  const [progressRaw, reportRaw] = String(res.result || "").split("---WRINGER-REPORT---");
-  const progress = (progressRaw || "")
+  const progress = String(res.result || "")
     .trim()
     .split("\n")
     .filter(Boolean)
@@ -52,12 +51,13 @@ export async function POST(req) {
     })
     .filter(Boolean);
 
+  // Download the report file directly — shell command output gets truncated
+  // for large reports.
   let report = null;
-  if (reportRaw && reportRaw.trim()) {
-    try {
-      report = JSON.parse(reportRaw.trim());
-    } catch {}
-  }
+  try {
+    const buf = await sandbox.fs.downloadFile(`${runDir}/report.json`);
+    report = JSON.parse(buf.toString("utf-8"));
+  } catch {}
 
   if (report) {
     try {
