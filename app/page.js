@@ -327,7 +327,10 @@ export default function Home() {
                   if (p.kind === "worker_start") return `[WORKER] ${p.name} (${p.backend}) engaged`;
                   if (p.kind === "worker_done") return `[WORKER] ${p.name} ${p.error ? `FAILED: ${p.error}` : "answered"}`;
                   if (p.kind === "reviewer_start") return `[REVIEW] ${p.name} judging ${p.n_candidates} candidates`;
+                  if (p.kind === "reviewer_done") return `[REVIEW] ${p.name || "Reviewer"} ${p.error ? `FAILED: ${p.error}` : "verdict in"}`;
                   if (p.kind === "run_done") return `[DONE] cost=$${Number(p.cost_usd || 0).toFixed(4)} time=${Number(p.elapsed_s || 0).toFixed(1)}s${p.error ? ` error=${p.error}` : ""}`;
+                  if (p.kind === "gamma_start") return `[GAMMA] compiling HQ report (${p.model}) — worth the wait`;
+                  if (p.kind === "gamma_done") return p.ok ? `[GAMMA] HQ report ready · $${Number(p.cost_usd || 0).toFixed(4)} · ${Number(p.elapsed_s || 0).toFixed(1)}s` : `[GAMMA] skipped: ${p.error}`;
                   return `[${p.kind}] ${JSON.stringify({ ...p, ts: undefined, run_id: undefined })}`;
                 })
                 .join("\n")}
@@ -344,6 +347,17 @@ export default function Home() {
                   ) : null}
                   {mechaReport.run_id && <span className="stat">{mechaReport.run_id}</span>}
                 </div>
+                {mechaReport.gamma && (
+                  <div className="verdict gamma">
+                    <div className="verdict-head mono">
+                      GAMMA REPORT — HQ deliverable ({mechaReport.gamma_model})
+                    </div>
+                    <pre className="output">{mechaReport.gamma}</pre>
+                    <div className="row">
+                      <button className="btn-ghost" onClick={() => copy(mechaReport.gamma, "GAMMA report")}>Copy GAMMA report</button>
+                    </div>
+                  </div>
+                )}
                 {mechaReport.reviewer && (
                   <div className="verdict">
                     <div className="verdict-head mono">
