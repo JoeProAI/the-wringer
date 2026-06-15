@@ -1,0 +1,27 @@
+# Fly config for the dedicated Hermes + OpenClaw agent-worker service.
+# Scale-to-zero so idle cost is ~free; wakes on the first request from The Wringer.
+app = "wringer-agents"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 8
+    hard_limit = 16
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+# Secrets (set with `fly secrets set ...`, NOT committed):
+#   WRINGER_AGENT_TOKEN, XAI_API_KEY, OPENROUTER_API_KEY
+# Optional: OPENAI_API_KEY, HERMES_MODEL, OPENCLAW_MODEL, HERMES_MAX_TOOL_CALLS

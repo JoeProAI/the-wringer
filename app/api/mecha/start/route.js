@@ -86,6 +86,15 @@ export async function POST(req) {
       process.env.GAMMA_APP_API_KEY
         ? `GAMMA_APP_API_KEY="${process.env.GAMMA_APP_API_KEY}"`
         : "",
+      // Dedicated Hermes + OpenClaw agent service. When set, mecha adds them as
+      // genuine remote candidates (availability-gated via /health); when unset,
+      // runs degrade cleanly to Claude/Codex/Grok.
+      process.env.WRINGER_AGENT_ENDPOINT
+        ? `WRINGER_AGENT_ENDPOINT="${process.env.WRINGER_AGENT_ENDPOINT}"`
+        : "",
+      process.env.WRINGER_AGENT_TOKEN
+        ? `WRINGER_AGENT_TOKEN="${process.env.WRINGER_AGENT_TOKEN}"`
+        : "",
     ]
       .filter(Boolean)
       .join(" ");
