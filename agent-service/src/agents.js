@@ -31,7 +31,9 @@ const MAX_OUTPUT_TOKENS = Number(process.env.AGENT_MAX_TOKENS || 1500);
 
 function pickPersona(persona) {
   const key = String(persona || "").toLowerCase();
-  return PERSONAS[key] || null;
+  // Own-property check so inherited keys ("constructor", "toString", ...) can't
+  // resolve to a bogus persona and bypass the unknown-persona fallback.
+  return Object.hasOwn(PERSONAS, key) ? PERSONAS[key] : null;
 }
 
 // ---------------------------------------------------------------------------
