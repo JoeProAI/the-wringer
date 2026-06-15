@@ -41,7 +41,11 @@ app.post("/run", async (req, res) => {
   if (!prompt || !persona) {
     return res.status(400).json({ error: "prompt and persona are required" });
   }
-  const timeoutMs = Math.max(5, Number(req.body?.timeout_s || DEFAULT_TIMEOUT_S)) * 1000;
+  // Guard against non-numeric timeout_s ("abc", true, {}): Number(...) would be
+  // NaN, Math.max(5, NaN) is NaN, and setTimeout(fn, NaN) fires immediately.
+  const rawTimeout = Number(req.body?.timeout_s ?? DEFAULT_TIMEOUT_S);
+  const timeoutMs =
+    (Number.isFinite(rawTimeout) ? Math.max(5, rawTimeout) : DEFAULT_TIMEOUT_S) * 1000;
   try {
     const result = await runAgent({ prompt, persona, model, timeoutMs });
     res.json(result);
