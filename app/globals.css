@@ -252,6 +252,18 @@ textarea { resize: vertical; min-height: 64px; }
 .tier label { color: var(--paper-mut); }
 .tier .promo-hint { font-size: 11.5px; color: var(--paper-mut); margin: 10px 0 0; font-style: italic; }
 .tier select { background: var(--ink); color: var(--paper); border-color: var(--line); }
+.tier .mega-config { margin-top: 12px; }
+.tier .mega-config label { display: block; margin: 4px 0 8px; }
+.tier .mega-config label .mono { color: var(--red-bright); }
+.tier input[type="range"] {
+  width: 100%;
+  padding: 0;
+  height: 6px;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  accent-color: var(--red);
+  cursor: pointer;
+}
 
 /* ---------- OUTPUT PANELS ---------- */
 .results { max-width: 1180px; margin: 0 auto; padding: 0 28px 80px; }
