@@ -1,4 +1,5 @@
 import express from "express";
+import crypto from "node:crypto";
 import { runAgent, PERSONAS } from "./agents.js";
 
 const app = express();
@@ -8,11 +9,19 @@ const PORT = Number(process.env.PORT || 8080);
 const AUTH_TOKEN = process.env.WRINGER_AGENT_TOKEN || "";
 const DEFAULT_TIMEOUT_S = Number(process.env.AGENT_TIMEOUT_S || 180);
 
+// Constant-time string compare. Hashes both sides to a fixed length first so
+// timingSafeEqual never sees mismatched lengths and no length info leaks.
+function safeEqual(a, b) {
+  const ah = crypto.createHash("sha256").update(String(a)).digest();
+  const bh = crypto.createHash("sha256").update(String(b)).digest();
+  return crypto.timingSafeEqual(ah, bh);
+}
+
 function authed(req) {
   if (!AUTH_TOKEN) return true; // no token configured => open (local dev only)
   const h = req.headers.authorization || "";
   const m = h.match(/^Bearer\s+(.+)$/i);
-  return !!m && m[1] === AUTH_TOKEN;
+  return !!m && safeEqual(m[1], AUTH_TOKEN);
 }
 
 app.get("/health", (_req, res) => {

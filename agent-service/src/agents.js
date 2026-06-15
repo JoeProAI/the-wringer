@@ -177,7 +177,15 @@ async function runOpenClaw(model, prompt, systemPrompt, timeoutMs) {
         } catch {
           args = {};
         }
-        const result = await executeTool(tc.function?.name, args);
+        // Bound tool execution by the remaining request budget so a hung
+        // web-search can't blow past the caller's timeout contract.
+        const toolBudget = Math.max(1000, deadline - Date.now());
+        const result = await Promise.race([
+          executeTool(tc.function?.name, args),
+          new Promise((resolve) =>
+            setTimeout(() => resolve("Tool timed out."), toolBudget)
+          ),
+        ]);
         messages.push({ role: "tool", tool_call_id: tc.id, content: result });
         toolRounds++;
       }
