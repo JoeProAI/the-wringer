@@ -57,9 +57,17 @@ export async function POST(req) {
     const strategy = MECHA_STRATEGIES.includes(form.mechaStrategy)
       ? form.mechaStrategy
       : "triumvirate";
+    // Mega runs carry an agent count (clamped 3..100); every other strategy
+    // ignores AGENTS (0 = strategy default).
+    let agents = 0;
+    if (strategy === "mega") {
+      const n = parseInt(form.mechaAgents, 10);
+      agents = Number.isFinite(n) ? Math.max(3, Math.min(100, n)) : 12;
+    }
     const env = [
       `RUN_DIR="${runDir}"`,
       `STRATEGY="${strategy}"`,
+      `AGENTS="${agents}"`,
       `MECHA_OPENROUTER_FORCE="1"`,
       `OPENROUTER_API_KEY="${process.env.OPENROUTER_API_KEY}"`,
       process.env.XAI_API_KEY ? `XAI_API_KEY="${process.env.XAI_API_KEY}"` : "",

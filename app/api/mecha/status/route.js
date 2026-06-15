@@ -35,8 +35,10 @@ export async function POST(req) {
 
   const rootDir = (await sandbox.getUserRootDir()) || "/home/daytona";
   const runDir = `${rootDir.replace(/\/$/, "")}/wringer`;
+  // Mega runs emit far more events (one per agent + bracket layers), so keep a
+  // generous tail.
   const res = await sandbox.process.executeCommand(
-    `tail -n 60 "${runDir}/mecha/state/events.jsonl" 2>/dev/null`
+    `tail -n 200 "${runDir}/mecha/state/events.jsonl" 2>/dev/null`
   );
   const progress = String(res.result || "")
     .trim()

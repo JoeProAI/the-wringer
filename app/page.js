@@ -5,6 +5,14 @@ import { buildContract, buildPrompt } from "../lib/protocol";
 
 const EMPTY_AC = { text: "", kind: "AUTO", check: "", expect: "" };
 
+// Mega MECHA Run pricing (mirrors app/api/checkout/route.js defaults): base $10,
+// +$0.35 per agent over 4, capped at $40. Agents 3-4 stay at the $10 minimum.
+const megaPriceCents = (a) => {
+  const n = Math.max(3, Math.min(100, Number(a) || 0));
+  return n <= 4 ? 1000 : Math.min(1000 + 35 * (n - 4), 4000);
+};
+const fmtUSD = (cents) => (cents % 100 === 0 ? `$${cents / 100}` : `$${(cents / 100).toFixed(2)}`);
+
 export default function Home() {
   const [goal, setGoal] = useState("");
   const [acs, setAcs] = useState([{ ...EMPTY_AC }]);
@@ -17,12 +25,13 @@ export default function Home() {
   const [error, setError] = useState("");
   const [running, setRunning] = useState(false);
   const [mechaStrategy, setMechaStrategy] = useState("triumvirate");
+  const [mechaAgents, setMechaAgents] = useState(24);
   const [mechaProgress, setMechaProgress] = useState([]);
   const [mechaReport, setMechaReport] = useState(null);
 
   const formState = useCallback(
-    () => ({ goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy }),
-    [goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy]
+    () => ({ goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy, mechaAgents }),
+    [goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy, mechaAgents]
   );
 
   const runWithSession = useCallback(async (sessionId, form) => {
@@ -111,6 +120,7 @@ export default function Home() {
         setMaxIterations(form.maxIterations || 30);
         setPreauthorized(form.preauthorized || "");
         if (form.mechaStrategy) setMechaStrategy(form.mechaStrategy);
+        if (form.mechaAgents) setMechaAgents(form.mechaAgents);
         window.history.replaceState({}, "", "/");
         if (tier === "mecha") startMecha(sessionId, form);
         else runWithSession(sessionId, form);
@@ -140,7 +150,10 @@ export default function Home() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier }),
+        body: JSON.stringify({
+          tier,
+          agents: tier === "mecha" && mechaStrategy === "mega" ? mechaAgents : undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Checkout failed");
@@ -180,6 +193,9 @@ export default function Home() {
   const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
     "I just put my agent task through The Wringer. It auto-repaired my acceptance criteria and graded the whole contract. Brutal."
   )}&url=${encodeURIComponent("https://thewringer.ai")}`;
+
+  const megaOn = mechaStrategy === "mega";
+  const megaCents = megaPriceCents(mechaAgents);
 
   return (
     <main>
@@ -282,7 +298,7 @@ export default function Home() {
           </div>
 
           <div className="tier feature">
-            <div className="price">$10</div>
+            <div className="price">{megaOn ? fmtUSD(megaCents) : "$10"}</div>
             <h3>MECHA Run</h3>
             <p>
               Real execution, not a dry-run. The MECHA orchestrator dispatches your contract to a swarm of
@@ -293,14 +309,41 @@ export default function Home() {
             <select value={mechaStrategy} onChange={(e) => setMechaStrategy(e.target.value)}>
               <option value="senate">senate — every backend answers, reviewer merges</option>
               <option value="triumvirate">triumvirate — Claude + Codex + Grok + reviewer</option>
+              <option value="mega">mega — N agents across lineages, tournament judge</option>
               <option value="best-of-3">best-of-3 — three personas, reviewer picks</option>
               <option value="solo-claude">solo-claude — Claude at max thinking</option>
               <option value="solo-codex">solo-codex — Codex at max thinking</option>
               <option value="frontier-coder">frontier-coder — TDD: test, implement, review</option>
             </select>
+            {megaOn && (
+              <div className="mega-config">
+                <label>
+                  Agents — {mechaAgents} <span className="mono">({fmtUSD(megaCents)})</span>
+                </label>
+                <input
+                  type="range"
+                  min="3"
+                  max="100"
+                  value={mechaAgents}
+                  onChange={(e) => setMechaAgents(parseInt(e.target.value, 10))}
+                />
+                <p className="promo-hint">
+                  {mechaAgents} real agents fan out across Claude / Codex / Grok lineages in
+                  concurrency-limited waves, then a tournament reviewer (judge pods → winners advance)
+                  collapses them into one verified answer. More agents ≠ linearly better — the trust is
+                  the verification bracket. Min run stays $10.
+                </p>
+              </div>
+            )}
             <div style={{ height: 16 }} />
             <button className="btn-stamp" onClick={() => wringerRun("mecha")} disabled={running}>
-              {running ? <span className="blink">MECHA engaged…</span> : "MECHA Run — $10"}
+              {running ? (
+                <span className="blink">MECHA engaged…</span>
+              ) : megaOn ? (
+                `MEGA MECHA Run — ${fmtUSD(megaCents)} · ${mechaAgents} agents`
+              ) : (
+                "MECHA Run — $10"
+              )}
             </button>
             <p className="promo-hint">Press pass codes work here too.</p>
           </div>
@@ -323,11 +366,14 @@ export default function Home() {
               {mechaProgress
                 .map((p) => {
                   if (p.kind === "run_start") return `[BOOT] ${p.run_id} strategy=${p.strategy}`;
+                  if (p.kind === "strategy_start" && p.strategy === "mega") return `[FANOUT] mega — ${p.agents ?? p.workers ?? (p.worker_list || []).length} agents${p.concurrency ? `, ${p.concurrency}/wave` : ""}${(p.lineages || []).length ? ` across ${(p.lineages || []).join(", ")}` : ""}`;
                   if (p.kind === "strategy_start") return `[FANOUT] ${p.strategy} — ${p.workers ?? (p.worker_list || []).length} workers: ${(p.worker_list || []).map((w) => w.name).join(", ")}`;
                   if (p.kind === "worker_start") return `[WORKER] ${p.name} (${p.backend}) engaged`;
                   if (p.kind === "worker_done") return `[WORKER] ${p.name} ${p.error ? `FAILED: ${p.error}` : "answered"}`;
                   if (p.kind === "reviewer_start") return `[REVIEW] ${p.name} judging ${p.n_candidates} candidates`;
                   if (p.kind === "reviewer_done") return `[REVIEW] ${p.name || "Reviewer"} ${p.error ? `FAILED: ${p.error}` : "verdict in"}`;
+                  if (p.kind === "mega_layer_start") return `[BRACKET] layer ${p.layer} — ${p.pods} judge pod${p.pods === 1 ? "" : "s"} over ${p.candidates} candidates`;
+                  if (p.kind === "mega_pod_done") return `[BRACKET] L${p.layer}.${p.pod} → winner ${p.winner}${p.confidence != null ? ` (conf ${p.confidence})` : ""}`;
                   if (p.kind === "run_done") return `[DONE] cost=$${Number(p.cost_usd || 0).toFixed(4)} time=${Number(p.elapsed_s || 0).toFixed(1)}s${p.error ? ` error=${p.error}` : ""}`;
                   if (p.kind === "gamma_start") return `[GAMMA] compiling HQ report (${p.model}) — worth the wait`;
                   if (p.kind === "gamma_done") return p.ok ? `[GAMMA] HQ report ready · $${Number(p.cost_usd || 0).toFixed(4)} · ${Number(p.elapsed_s || 0).toFixed(1)}s` : `[GAMMA] skipped: ${p.error}`;
@@ -347,6 +393,8 @@ export default function Home() {
                   {(mechaReport.total_input_tokens || mechaReport.total_output_tokens) ? (
                     <span className="stat">{mechaReport.total_input_tokens || 0} tok in / {mechaReport.total_output_tokens || 0} tok out</span>
                   ) : null}
+                  {mechaReport.agents ? <span className="stat">{mechaReport.succeeded ?? "?"}/{mechaReport.agents} agents survived</span> : null}
+                  {mechaReport.layers ? <span className="stat">{mechaReport.layers} bracket layers</span> : null}
                   {mechaReport.run_id && <span className="stat">{mechaReport.run_id}</span>}
                 </div>
                 {mechaReport.gamma && (
