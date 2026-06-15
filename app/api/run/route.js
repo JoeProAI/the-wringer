@@ -23,8 +23,8 @@ export async function POST(req) {
   }
 
   if (process.env.FREE_MODE !== "true") {
-    const fail = await verifyAndConsume(sessionId, "audit");
-    if (fail) return NextResponse.json({ error: fail.error }, { status: fail.status });
+    const v = await verifyAndConsume(sessionId, "audit");
+    if (v?.error) return NextResponse.json({ error: v.error }, { status: v.status });
   }
 
   if (!process.env.OPENROUTER_API_KEY) {

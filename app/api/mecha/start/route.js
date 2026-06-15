@@ -19,9 +19,12 @@ export async function POST(req) {
     return NextResponse.json({ error: "Missing goal" }, { status: 400 });
   }
 
+  // Infinity until a payment gate proves otherwise (FREE_MODE / local demo).
+  let paidAgents = Infinity;
   if (process.env.FREE_MODE !== "true") {
-    const fail = await verifyAndConsume(sessionId, "mecha");
-    if (fail) return NextResponse.json({ error: fail.error }, { status: fail.status });
+    const v = await verifyAndConsume(sessionId, "mecha");
+    if (v?.error) return NextResponse.json({ error: v.error }, { status: v.status });
+    paidAgents = v.paidAgents;
   }
 
   if (!process.env.OPENROUTER_API_KEY) {
@@ -63,6 +66,9 @@ export async function POST(req) {
     if (strategy === "mega") {
       const n = parseInt(form.mechaAgents, 10);
       agents = Number.isFinite(n) ? Math.max(3, Math.min(100, n)) : 12;
+      // Never run more agents than the session was charged for: blocks a cheap
+      // ($10/base) session being replayed as a high Mega tier.
+      agents = Math.min(agents, paidAgents);
     }
     const env = [
       `RUN_DIR="${runDir}"`,
