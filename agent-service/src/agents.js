@@ -76,12 +76,14 @@ async function runHermes(model, prompt, systemPrompt, timeoutMs) {
 
   let answer = (data.output_text || "").trim();
   const citations = [];
-  if (!answer && Array.isArray(data.output)) {
+  // Always walk the output items to collect structured citation URLs from
+  // annotations; only fall back to message text when output_text was empty.
+  if (Array.isArray(data.output)) {
     for (const item of data.output) {
       if (item.type === "message" && Array.isArray(item.content)) {
         for (const c of item.content) {
-          if (c.type === "output_text" && c.text) {
-            answer += (answer ? "\n" : "") + c.text;
+          if (c.type === "output_text") {
+            if (!answer && c.text) answer += (answer ? "\n" : "") + c.text;
             for (const ann of c.annotations || []) {
               if (ann.url) citations.push(ann.url);
             }
