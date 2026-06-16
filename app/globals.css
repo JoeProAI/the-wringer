@@ -308,6 +308,14 @@ pre.output {
 .verdict { border-left: 3px solid var(--red); padding-left: 14px; margin: 0 0 18px; }
 .verdict.gamma { border-left-color: var(--paper); }
 .verdict.gamma .verdict-head { color: var(--paper); }
+.verdict.evidence-block { border-left-color: var(--paper-mut); }
+.verdict.evidence-block.evidence-pass { border-left-color: #3fb950; }
+.verdict.evidence-block.evidence-pass .verdict-head { color: #3fb950; }
+.verdict.evidence-block.evidence-fail { border-left-color: var(--red-bright); }
+.evidence-sources { margin: 8px 0 0; padding-left: 18px; }
+.evidence-sources li { font-size: 12.5px; margin-bottom: 4px; word-break: break-word; }
+.evidence-sources a { color: var(--paper-dim); }
+.evidence-sources a:hover { color: var(--paper); }
 .verdict-head {
   font-size: 12px;
   font-weight: 700;

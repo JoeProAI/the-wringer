@@ -59,7 +59,7 @@ export async function POST(req) {
 
     const strategy = MECHA_STRATEGIES.includes(form.mechaStrategy)
       ? form.mechaStrategy
-      : "triumvirate";
+      : "adaptive";
     // Mega runs carry an agent count (clamped 3..100); every other strategy
     // ignores AGENTS (0 = strategy default).
     let agents = 0;
@@ -75,6 +75,10 @@ export async function POST(req) {
       `STRATEGY="${strategy}"`,
       `AGENTS="${agents}"`,
       `MECHA_OPENROUTER_FORCE="1"`,
+      // Real verification, default ON: workers get live web search (claims get
+      // checked against cited sources) and produced code is actually executed.
+      `MECHA_WEB_SEARCH="${process.env.MECHA_WEB_SEARCH || "1"}"`,
+      `MECHA_VERIFY_EXECUTION="${process.env.MECHA_VERIFY_EXECUTION || "1"}"`,
       `OPENROUTER_API_KEY="${process.env.OPENROUTER_API_KEY}"`,
       process.env.XAI_API_KEY ? `XAI_API_KEY="${process.env.XAI_API_KEY}"` : "",
       process.env.MECHA_OPENROUTER_CLAUDE_MODEL
