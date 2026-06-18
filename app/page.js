@@ -28,6 +28,9 @@ export default function Home() {
   const [mechaAgents, setMechaAgents] = useState(24);
   const [mechaProgress, setMechaProgress] = useState([]);
   const [mechaReport, setMechaReport] = useState(null);
+  const [draftInput, setDraftInput] = useState("");
+  const [drafting, setDrafting] = useState(false);
+  const [draftNotes, setDraftNotes] = useState([]);
 
   const formState = useCallback(
     () => ({ goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy, mechaAgents }),
@@ -128,6 +131,40 @@ export default function Home() {
       }
     }
   }, [runWithSession, startMecha]);
+
+  async function draftWorkOrder() {
+    setError("");
+    const input = draftInput.trim();
+    if (!input) {
+      setError("Paste a post, a claim, or describe what you want — then draft it.");
+      return;
+    }
+    setDrafting(true);
+    setDraftNotes([]);
+    setStatus("GLM 5.2 is drafting your work order...");
+    try {
+      const res = await fetch("/api/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Draft failed");
+      if (data.goal) setGoal(data.goal);
+      const crit = (data.acceptanceCriteria || []).filter((t) => t && String(t).trim());
+      setAcs(crit.length ? crit.map((t) => ({ ...EMPTY_AC, text: t })) : [{ ...EMPTY_AC }]);
+      setNonGoals((data.nonGoals || []).join("; "));
+      if (data.strategy) setMechaStrategy(data.strategy);
+      setDraftNotes(data.notes || []);
+      setStatus(`Drafted by ${data.model_label || "GLM 5.2"} — review and edit anything before you run.`);
+      document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth" });
+    } catch (e) {
+      setError(e.message);
+      setStatus("");
+    } finally {
+      setDrafting(false);
+    }
+  }
 
   function compile() {
     setError("");
@@ -248,6 +285,29 @@ export default function Home() {
           <div className="ticket-head">
             <h2>Work Order</h2>
             <span className="no">FORM W-1 · LOOP PROTOCOL v5.0</span>
+          </div>
+
+          <div className="draft-box">
+            <div className="draft-head">
+              <span className="draft-title mono">Not sure how to fill this out?</span>
+              <span className="draft-badge mono">⚡ Drafted by GLM 5.2</span>
+            </div>
+            <textarea
+              className="draft-input"
+              value={draftInput}
+              onChange={(e) => setDraftInput(e.target.value)}
+              placeholder="Paste a post, a claim, or just describe what you want checked or built — e.g. 'prove if this is right or wrong:' + a tweet. GLM 5.2 drafts the whole work order for you to edit."
+            />
+            <button className="btn-stamp draft-btn" onClick={draftWorkOrder} disabled={drafting || running}>
+              {drafting ? <span className="blink">GLM 5.2 drafting…</span> : "Draft my work order →"}
+            </button>
+            {draftNotes.length > 0 && (
+              <ul className="draft-notes">
+                {draftNotes.map((n, i) => (
+                  <li key={i}>{n}</li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <label>Goal (one sentence — what must be true when the agent stops)</label>
