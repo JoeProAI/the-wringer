@@ -57,7 +57,41 @@ function asStringArray(v) {
   return [];
 }
 
+// Lightweight per-IP rate limit so the free draft endpoint can't be hammered
+// to run up OpenRouter spend. Fixed window, in-memory: best-effort only
+// (serverless instances don't share state), but it stops the obvious abuse.
+const RATE_LIMIT = parseInt(process.env.DRAFT_RATE_LIMIT || "5", 10);
+const RATE_WINDOW_MS = 60_000;
+const hits = new Map();
+
+function clientIp(req) {
+  const fwd = req.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0].trim();
+  return req.headers.get("x-real-ip") || "unknown";
+}
+
+function rateLimited(ip) {
+  const now = Date.now();
+  const rec = hits.get(ip);
+  if (!rec || now - rec.start >= RATE_WINDOW_MS) {
+    hits.set(ip, { start: now, count: 1 });
+    if (hits.size > 5000) {
+      for (const [k, v] of hits) if (now - v.start >= RATE_WINDOW_MS) hits.delete(k);
+    }
+    return false;
+  }
+  rec.count += 1;
+  return rec.count > RATE_LIMIT;
+}
+
 export async function POST(req) {
+  if (rateLimited(clientIp(req))) {
+    return NextResponse.json(
+      { error: `Too many drafts — give GLM 5.2 a minute (limit ${RATE_LIMIT}/min).` },
+      { status: 429 }
+    );
+  }
+
   const body = await req.json().catch(() => ({}));
   const input = (body?.input || "").toString().trim();
   if (!input) {
