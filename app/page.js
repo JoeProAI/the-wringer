@@ -24,10 +24,13 @@ export default function Home() {
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [running, setRunning] = useState(false);
-  const [mechaStrategy, setMechaStrategy] = useState("triumvirate");
+  const [mechaStrategy, setMechaStrategy] = useState("adaptive");
   const [mechaAgents, setMechaAgents] = useState(24);
   const [mechaProgress, setMechaProgress] = useState([]);
   const [mechaReport, setMechaReport] = useState(null);
+  const [draftInput, setDraftInput] = useState("");
+  const [drafting, setDrafting] = useState(false);
+  const [draftNotes, setDraftNotes] = useState([]);
 
   const formState = useCallback(
     () => ({ goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy, mechaAgents }),
@@ -128,6 +131,40 @@ export default function Home() {
       }
     }
   }, [runWithSession, startMecha]);
+
+  async function draftWorkOrder() {
+    setError("");
+    const input = draftInput.trim();
+    if (!input) {
+      setError("Paste a post, a claim, or describe what you want — then draft it.");
+      return;
+    }
+    setDrafting(true);
+    setDraftNotes([]);
+    setStatus("GLM 5.2 is drafting your work order...");
+    try {
+      const res = await fetch("/api/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Draft failed");
+      if (data.goal) setGoal(data.goal);
+      const crit = (data.acceptanceCriteria || []).filter((t) => t && String(t).trim());
+      setAcs(crit.length ? crit.map((t) => ({ ...EMPTY_AC, text: t })) : [{ ...EMPTY_AC }]);
+      setNonGoals((data.nonGoals || []).join("; "));
+      if (data.strategy) setMechaStrategy(data.strategy);
+      setDraftNotes(data.notes || []);
+      setStatus(`Drafted by ${data.model_label || "GLM 5.2"} — review and edit anything before you run.`);
+      document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth" });
+    } catch (e) {
+      setError(e.message);
+      setStatus("");
+    } finally {
+      setDrafting(false);
+    }
+  }
 
   function compile() {
     setError("");
@@ -250,6 +287,29 @@ export default function Home() {
             <span className="no">FORM W-1 · LOOP PROTOCOL v5.0</span>
           </div>
 
+          <div className="draft-box">
+            <div className="draft-head">
+              <span className="draft-title mono">Not sure how to fill this out?</span>
+              <span className="draft-badge mono">⚡ Drafted by GLM 5.2</span>
+            </div>
+            <textarea
+              className="draft-input"
+              value={draftInput}
+              onChange={(e) => setDraftInput(e.target.value)}
+              placeholder="Paste a post, a claim, or just describe what you want checked or built — e.g. 'prove if this is right or wrong:' + a tweet. GLM 5.2 drafts the whole work order for you to edit."
+            />
+            <button className="btn-stamp draft-btn" onClick={draftWorkOrder} disabled={drafting || running}>
+              {drafting ? <span className="blink">GLM 5.2 drafting…</span> : "Draft my work order →"}
+            </button>
+            {draftNotes.length > 0 && (
+              <ul className="draft-notes">
+                {draftNotes.map((n, i) => (
+                  <li key={i}>{n}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <label>Goal (one sentence — what must be true when the agent stops)</label>
           <textarea value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Ship a working /healthz endpoint that returns 200 with build SHA" />
 
@@ -307,6 +367,7 @@ export default function Home() {
             </p>
             <label>Strategy</label>
             <select value={mechaStrategy} onChange={(e) => setMechaStrategy(e.target.value)}>
+              <option value="adaptive">adaptive — as many agents as it takes, web-checked + code-run (recommended)</option>
               <option value="senate">senate — every backend answers, reviewer merges</option>
               <option value="triumvirate">triumvirate — Claude + Codex + Grok + reviewer</option>
               <option value="mega">mega — N agents across lineages, tournament judge</option>
@@ -395,8 +456,50 @@ export default function Home() {
                   ) : null}
                   {mechaReport.agents ? <span className="stat">{mechaReport.succeeded ?? "?"}/{mechaReport.agents} agents survived</span> : null}
                   {mechaReport.layers ? <span className="stat">{mechaReport.layers} bracket layers</span> : null}
+                  {mechaReport.rounds ? <span className="stat">{mechaReport.rounds} round{mechaReport.rounds > 1 ? "s" : ""}{mechaReport.stop_reason ? ` · ${String(mechaReport.stop_reason).replace(/_/g, " ")}` : ""}</span> : null}
                   {mechaReport.run_id && <span className="stat">{mechaReport.run_id}</span>}
                 </div>
+                {mechaReport.evidence && (
+                  <div className={`verdict evidence-block ${mechaReport.evidence.verified ? "evidence-pass" : mechaReport.evidence.execution === "fail" ? "evidence-fail" : ""}`}>
+                    <div className="verdict-head mono">
+                      EVIDENCE — what actually backs this result
+                    </div>
+                    <div className="mecha-stats mono" style={{ marginTop: 8 }}>
+                      <span className="stat">
+                        {mechaReport.evidence.execution === "pass" && "code executed → PASS"}
+                        {mechaReport.evidence.execution === "fail" && "code executed → FAIL"}
+                        {mechaReport.evidence.execution === "inconclusive" && "code executed → inconclusive"}
+                        {mechaReport.evidence.execution === "none" && "no code executed"}
+                      </span>
+                      <span className="stat">
+                        {mechaReport.evidence.citations > 0
+                          ? `${mechaReport.evidence.citations} source${mechaReport.evidence.citations > 1 ? "s" : ""} cited`
+                          : "no external sources checked"}
+                      </span>
+                    </div>
+                    {mechaReport.verification && mechaReport.verification.attempted && (
+                      <p className="promo-hint" style={{ marginTop: 6 }}>
+                        Ran <span className="mono">{mechaReport.verification.command}</span> → exit{" "}
+                        {mechaReport.verification.exit_code}
+                        {mechaReport.verification.reason ? ` (${mechaReport.verification.reason})` : ""}
+                      </p>
+                    )}
+                    {mechaReport.citations?.length > 0 && (
+                      <ul className="evidence-sources">
+                        {mechaReport.citations.map((s, i) => (
+                          <li key={i}>
+                            <a href={s.url} target="_blank" rel="noopener noreferrer">{s.title || s.url}</a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    {!mechaReport.evidence.checked_against_reality && (
+                      <p className="promo-hint">
+                        This result is reasoning-only — no live sources were retrieved and no code was executed, so nothing here is labeled “verified.”
+                      </p>
+                    )}
+                  </div>
+                )}
                 {mechaReport.gamma && (
                   <div className="verdict gamma">
                     <div className="verdict-head mono">
