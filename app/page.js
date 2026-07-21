@@ -2,6 +2,16 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { buildContract, buildPrompt } from "../lib/protocol";
+import {
+  buildDraftShareUrl,
+  clearDraftLocal,
+  decodeDraftParam,
+  formHasContent,
+  loadDraftLocal,
+  normalizeForm,
+  saveDraftLocal,
+} from "../lib/draft";
+import { extractRepairedForm } from "../lib/parse-audit";
 
 const EMPTY_AC = { text: "", kind: "AUTO", check: "", expect: "" };
 
@@ -30,11 +40,33 @@ export default function Home() {
   const [assistBusy, setAssistBusy] = useState(false);
   const [assistLog, setAssistLog] = useState([]);
   const [assistTips, setAssistTips] = useState([]);
+  const [draftNote, setDraftNote] = useState("");
+  const [shareNote, setShareNote] = useState("");
+  const [repairedPreview, setRepairedPreview] = useState(null);
 
   const formState = useCallback(
     () => ({ goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy, mechaAgents }),
     [goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy, mechaAgents]
   );
+
+  const applyForm = useCallback((raw, { save = true, note = "" } = {}) => {
+    const form = normalizeForm(raw);
+    setGoal(form.goal);
+    setAcs(form.acs);
+    setNonGoals(form.nonGoals);
+    setMaxIterations(form.maxIterations);
+    setPreauthorized(form.preauthorized);
+    if (form.mechaStrategy) setMechaStrategy(form.mechaStrategy);
+    if (form.mechaAgents) setMechaAgents(form.mechaAgents);
+    setContract(form.goal ? buildContract(form) : "");
+    if (save && formHasContent(form)) {
+      const saved = saveDraftLocal(form);
+      if (saved?.savedAt) {
+        setDraftNote(note || `Draft saved ${new Date(saved.savedAt).toLocaleString()}`);
+      }
+    }
+    return form;
+  }, []);
 
   const runWithSession = useCallback(async (sessionId, form) => {
     setRunning(true);
@@ -49,7 +81,13 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Run failed");
       setOutput(data.output);
-      setStatus(`AUDIT COMPLETE - model: ${data.model}`);
+      const repaired = extractRepairedForm(data.output || "");
+      setRepairedPreview(repaired);
+      setStatus(
+        repaired
+          ? `AUDIT COMPLETE - model: ${data.model}. Repairs ready to apply.`
+          : `AUDIT COMPLETE - model: ${data.model}`
+      );
     } catch (e) {
       setError(e.message);
       setStatus("");
@@ -114,29 +152,64 @@ export default function Home() {
     [pollMecha]
   );
 
+  // Restore share-link draft, local draft, or post-checkout form
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
     const tier = params.get("tier");
+    const draftParam = params.get("draft");
+
     if (params.get("canceled")) setStatus("Payment canceled. The Wringer waits.");
+
     if (sessionId) {
       const saved = localStorage.getItem("wringer_form");
       if (saved) {
-        const form = JSON.parse(saved);
-        setGoal(form.goal || "");
-        setAcs(form.acs && form.acs.length ? form.acs : [{ ...EMPTY_AC }]);
-        setNonGoals(form.nonGoals || "");
-        setMaxIterations(form.maxIterations || 30);
-        setPreauthorized(form.preauthorized || "");
-        if (form.mechaStrategy) setMechaStrategy(form.mechaStrategy);
-        if (form.mechaAgents) setMechaAgents(form.mechaAgents);
-        window.history.replaceState({}, "", "/");
-        if (tier === "mecha") startMecha(sessionId, form);
-        else runWithSession(sessionId, form);
-        document.getElementById("results")?.scrollIntoView();
+        try {
+          const form = normalizeForm(JSON.parse(saved));
+          applyForm(form, { save: true, note: "Restored checkout draft" });
+          window.history.replaceState({}, "", "/");
+          if (tier === "mecha") startMecha(sessionId, form);
+          else runWithSession(sessionId, form);
+          document.getElementById("results")?.scrollIntoView();
+          return;
+        } catch {
+          // fall through
+        }
       }
     }
-  }, [runWithSession, startMecha]);
+
+    if (draftParam) {
+      const shared = decodeDraftParam(draftParam);
+      if (shared && formHasContent(shared)) {
+        applyForm(shared, { save: true, note: "Loaded shared draft link" });
+        window.history.replaceState({}, "", window.location.pathname);
+        document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth" });
+        return;
+      }
+    }
+
+    const local = loadDraftLocal();
+    if (local?.form && formHasContent(local.form)) {
+      applyForm(local.form, {
+        save: false,
+        note: local.savedAt ? `Restored local draft from ${new Date(local.savedAt).toLocaleString()}` : "Restored local draft",
+      });
+      setDraftNote(
+        local.savedAt ? `Restored local draft from ${new Date(local.savedAt).toLocaleString()}` : "Restored local draft"
+      );
+    }
+  }, [runWithSession, startMecha, applyForm]);
+
+  // Autosave drafts while editing
+  useEffect(() => {
+    const form = formState();
+    if (!formHasContent(form)) return;
+    const tmr = setTimeout(() => {
+      const saved = saveDraftLocal(form);
+      if (saved?.savedAt) setDraftNote(`Draft autosaved ${new Date(saved.savedAt).toLocaleTimeString()}`);
+    }, 600);
+    return () => clearTimeout(tmr);
+  }, [formState]);
 
   function compile() {
     setError("");
@@ -184,6 +257,71 @@ export default function Home() {
     setStatus(`${label} copied to clipboard.`);
   }
 
+  function saveDraftNow() {
+    const form = formState();
+    if (!formHasContent(form)) {
+      setDraftNote("Nothing to save yet.");
+      return;
+    }
+    const saved = saveDraftLocal(form);
+    setDraftNote(`Draft saved ${new Date(saved.savedAt).toLocaleString()}`);
+    setStatus("Draft saved on this device.");
+  }
+
+  async function copyShareLink() {
+    const form = formState();
+    if (!form.goal.trim()) {
+      setShareNote("Add a goal before sharing.");
+      return;
+    }
+    const url = buildDraftShareUrl(form);
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareNote("Share link copied. Anyone with the link gets this work order.");
+      setStatus("Draft link copied.");
+    } catch {
+      setShareNote(url);
+      setStatus("Could not copy automatically. Link is shown below.");
+    }
+  }
+
+  function clearDraftNow() {
+    clearDraftLocal();
+    applyForm(
+      {
+        goal: "",
+        acs: [{ ...EMPTY_AC }],
+        nonGoals: "",
+        maxIterations: 30,
+        preauthorized: "",
+        mechaStrategy,
+        mechaAgents,
+      },
+      { save: false }
+    );
+    setAssistLog([]);
+    setAssistTips([]);
+    setRepairedPreview(null);
+    setOutput("");
+    setDraftNote("Draft cleared.");
+    setShareNote("");
+    setStatus("Draft cleared.");
+  }
+
+  function applyRepairs() {
+    if (!repairedPreview) return;
+    applyForm(
+      {
+        ...repairedPreview,
+        mechaStrategy,
+        mechaAgents,
+      },
+      { save: true, note: "Applied audit repairs to form" }
+    );
+    setStatus("Audit repairs applied to the work order. Review, then run again or hit MECHA.");
+    document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   async function runAssist(e) {
     e?.preventDefault?.();
     const message = assistMsg.trim();
@@ -201,12 +339,7 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Assist failed");
       if (data.form) {
-        setGoal(data.form.goal || "");
-        setAcs(data.form.acs?.length ? data.form.acs : [{ ...EMPTY_AC }]);
-        setNonGoals(data.form.nonGoals || "");
-        setMaxIterations(data.form.maxIterations || 30);
-        setPreauthorized(data.form.preauthorized || "");
-        setContract(buildContract(data.form));
+        applyForm(data.form, { save: true, note: "Draft saved from Grok" });
       }
       if (data.tips?.length) setAssistTips(data.tips);
       setAssistLog((log) => [
@@ -337,6 +470,23 @@ export default function Home() {
             <h2>Work Order</h2>
             <span className="no">REVIEW · EDIT · THEN PRESS</span>
           </div>
+          <div className="draft-bar">
+            <button type="button" className="btn-ghost" onClick={saveDraftNow} disabled={running}>
+              Save draft
+            </button>
+            <button type="button" className="btn-ghost" onClick={copyShareLink} disabled={running}>
+              Copy share link
+            </button>
+            <button type="button" className="btn-ghost" onClick={clearDraftNow} disabled={running}>
+              Clear
+            </button>
+          </div>
+          {(draftNote || shareNote) && (
+            <div className="draft-notes">
+              {draftNote && <p className="field-help">{draftNote}</p>}
+              {shareNote && <p className="field-help mono share-link">{shareNote}</p>}
+            </div>
+          )}
 
           <label>Goal</label>
           <p className="field-help">One plain sentence. What does done look like?</p>
@@ -708,8 +858,23 @@ export default function Home() {
             <p className="field-help">
               Read repaired criteria first, then the dry-run notes. If checks are still mushy, fix the form and audit again before a MECHA run.
             </p>
+            {repairedPreview && (
+              <div className="repair-banner">
+                <div>
+                  <strong>Repairs ready.</strong> The auditor cleaned up the work order. One click puts them in the form.
+                </div>
+                <button type="button" className="btn-stamp" onClick={applyRepairs}>
+                  Use audit repairs
+                </button>
+              </div>
+            )}
             <pre className="output">{output}</pre>
             <div className="row">
+              {repairedPreview && (
+                <button type="button" className="btn-ghost" onClick={applyRepairs}>
+                  Use audit repairs
+                </button>
+              )}
               <button className="btn-ghost" onClick={() => copy(output, "Verdict")}>
                 Copy verdict
               </button>
