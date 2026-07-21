@@ -358,3 +358,108 @@ details.worker pre.output { border: 0; border-top: 1px solid var(--line); margin
   .hero { min-height: 70vh; }
   .hero-bg { background-position: 75% center; }
 }
+
+
+/* ---------- GROK ASSIST + GUIDE ---------- */
+.field-help {
+  margin: -4px 0 8px;
+  color: var(--paper-mut);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.ticket .field-help { color: #6e6656; }
+.panel .field-help { color: var(--paper-mut); margin-bottom: 10px; }
+
+.assist {
+  border: 1px solid var(--line-paper);
+  background: #f4efe3;
+  padding: 14px;
+  margin: 0 0 18px;
+}
+.assist-head {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.assist-log {
+  max-height: 180px;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 12px;
+}
+.assist-bubble {
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 10px 12px;
+  border: 1px solid var(--line-paper);
+  background: #fffdf7;
+  color: var(--ink);
+}
+.assist-bubble.user {
+  background: #e8dfc8;
+  border-color: #c9bea3;
+}
+.assist-bubble.assistant {
+  background: #fffdf7;
+}
+.assist-form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+.assist-form input {
+  margin: 0;
+}
+.tips {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  color: #5c5548;
+  font-size: 12.5px;
+}
+.tips li { margin: 4px 0; }
+
+.guide {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: #1b1611;
+  padding: 42px 28px;
+}
+.guide-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.guide h2 {
+  font-family: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  text-transform: uppercase;
+  font-size: 34px;
+  margin: 0 0 18px;
+  letter-spacing: 0.5px;
+}
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.guide-grid h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--red-bright);
+}
+.guide-grid ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--paper-dim);
+  font-size: 13.5px;
+}
+.guide-grid li { margin: 6px 0; }
+.guide-grid strong { color: var(--paper); }
+
+@media (max-width: 900px) {
+  .guide-grid { grid-template-columns: 1fr; }
+  .assist-form { grid-template-columns: 1fr; }
+}
