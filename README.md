@@ -27,3 +27,12 @@ Fill out your agent mission contract and put it through **LOOP PROTOCOL v5.0**:
 - `XAI_API_KEY` — enables Grok work-order coach (`/api/assist`)
 - `XAI_MODEL` / `WRINGER_GROK_MODEL` — optional, default `grok-4.5`
 
+
+## Grok coach rate limit
+
+`/api/assist` is capped per client IP (in-memory sliding window):
+
+- `ASSIST_RATE_LIMIT` (default **12**)
+- `ASSIST_RATE_WINDOW_MS` (default **3600000** = 1 hour)
+
+Over limit returns HTTP 429 with `Retry-After`.

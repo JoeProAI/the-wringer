@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
+import { assistLimitConfig, clientKeyFromRequest, takeToken } from "../../../lib/rate-limit.js";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const SYSTEM = `You help people fill out a Work Order for The Wringer — a product that audits or multi-agent-executes agent tasks.
+const SYSTEM = `You help people fill out a Work Order for The Wringer  -  a product that audits or multi-agent-executes agent tasks.
 
 Your job: turn messy human intent into a tight, honest work order.
 
@@ -51,6 +52,27 @@ export async function POST(req) {
     }
     if (message.length > 4000) {
       return NextResponse.json({ error: "Keep it under 4000 characters." }, { status: 400 });
+    }
+
+    const { limit, windowMs } = assistLimitConfig();
+    const key = clientKeyFromRequest(req);
+    const gate = takeToken(`assist:${key}`, { limit, windowMs });
+    if (!gate.ok) {
+      const mins = Math.max(1, Math.ceil(gate.retryAfterSec / 60));
+      return NextResponse.json(
+        {
+          error: `Grok coach limit reached (${limit} per hour). Try again in about ${mins} min.`,
+          retryAfterSec: gate.retryAfterSec,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(gate.retryAfterSec),
+            "X-RateLimit-Limit": String(limit),
+            "X-RateLimit-Remaining": "0",
+          },
+        }
+      );
     }
 
     const apiKey = process.env.XAI_API_KEY || process.env.GROK_API_KEY;
@@ -119,18 +141,27 @@ export async function POST(req) {
         expect: String(a.expect || "").trim(),
       }));
 
-    return NextResponse.json({
-      model,
-      reply: String(parsed.reply || "Draft ready. Check the fields and tighten anything fuzzy.").trim(),
-      form: {
-        goal: String(parsed.goal || "").trim(),
-        acs: acs.length ? acs : [{ text: "", kind: "AUTO", check: "", expect: "" }],
-        nonGoals: String(parsed.nonGoals || "").trim(),
-        maxIterations: Math.max(5, Math.min(100, Number(parsed.maxIterations) || 30)),
-        preauthorized: String(parsed.preauthorized || "").trim(),
+    return NextResponse.json(
+      {
+        model,
+        reply: String(parsed.reply || "Draft ready. Check the fields and tighten anything fuzzy.").trim(),
+        form: {
+          goal: String(parsed.goal || "").trim(),
+          acs: acs.length ? acs : [{ text: "", kind: "AUTO", check: "", expect: "" }],
+          nonGoals: String(parsed.nonGoals || "").trim(),
+          maxIterations: Math.max(5, Math.min(100, Number(parsed.maxIterations) || 30)),
+          preauthorized: String(parsed.preauthorized || "").trim(),
+        },
+        tips: Array.isArray(parsed.tips) ? parsed.tips.map(String).slice(0, 6) : [],
+        rateLimit: { limit, remaining: gate.remaining },
       },
-      tips: Array.isArray(parsed.tips) ? parsed.tips.map(String).slice(0, 6) : [],
-    });
+      {
+        headers: {
+          "X-RateLimit-Limit": String(limit),
+          "X-RateLimit-Remaining": String(gate.remaining),
+        },
+      }
+    );
   } catch (e) {
     return NextResponse.json({ error: e.message || "Assist failed" }, { status: 500 });
   }
