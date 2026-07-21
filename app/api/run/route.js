@@ -13,7 +13,21 @@ const RUN_INSTRUCTION = `THE WRINGER. You are The Wringer: a merciless protocol 
   weakest_link: <one sentence>
   one_fix: <the single highest-leverage improvement to the contract>
 </verdict>
-Be brutal but fair. Keep total output under 1200 words.`;
+5. After the verdict, emit ONE fenced JSON block the UI can apply back into the form. Use the repaired contract (not the weak original):
+\`\`\`json
+{
+  "repaired_form": {
+    "goal": "one sentence finished state",
+    "acs": [
+      {"text": "plain pass/fail check", "kind": "AUTO|HUMAN", "check": "optional how", "expect": "optional signal"}
+    ],
+    "nonGoals": "boundaries",
+    "maxIterations": 30,
+    "preauthorized": ""
+  }
+}
+\`\`\`
+No commentary inside the JSON fence. Be brutal but fair. Keep total output under 1400 words.`;
 
 export async function POST(req) {
   const body = await req.json();

@@ -514,3 +514,32 @@ details.worker pre.output { border: 0; border-top: 1px solid var(--line); margin
   .guide-grid { grid-template-columns: 1fr; }
   .coach { padding: 32px 16px 40px; }
 }
+
+.draft-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+.draft-notes { margin: 4px 0 8px; }
+.share-link {
+  word-break: break-all;
+  color: #4a4336 !important;
+}
+.repair-banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--red);
+  background: #2a1814;
+  padding: 14px 16px;
+  margin: 0 0 14px;
+  color: var(--paper);
+}
+.repair-banner strong { color: var(--red-bright); }
+.repair-banner .btn-stamp { white-space: nowrap; }
+@media (max-width: 700px) {
+  .repair-banner { flex-direction: column; align-items: stretch; }
+}
