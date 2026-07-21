@@ -6,7 +6,7 @@ const SITE_URL = process.env.SITE_URL || "https://thewringer.ai";
 export const metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "The Wringer — Turn vague agent ideas into real work orders",
+    default: "The Wringer  -  Turn vague agent ideas into real work orders",
     template: "%s · The Wringer",
   },
   description:
@@ -25,7 +25,7 @@ export const metadata = {
   creator: "JoePro",
   alternates: { canonical: SITE_URL },
   openGraph: {
-    title: "The Wringer — Put your agent task through the press",
+    title: "The Wringer  -  Put your agent task through the press",
     description:
       "Stop feeding agents mushy goals. Get a tight work order, a $1 audit, or a real multi-agent run for $10. No fabricated SUCCESS.",
     url: SITE_URL,
@@ -37,7 +37,7 @@ export const metadata = {
         url: "/og-card.jpg",
         width: 1200,
         height: 630,
-        alt: "The Wringer — put your agent task through the press",
+        alt: "The Wringer  -  put your agent task through the press",
       },
     ],
   },
