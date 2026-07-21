@@ -24,4 +24,6 @@ Fill out your agent mission contract and put it through **LOOP PROTOCOL v5.0**:
 - `SITE_URL` — canonical URL
 - `NEXT_PUBLIC_POSTHOG_KEY` — PostHog project API key (analytics disabled if unset)
 - `NEXT_PUBLIC_POSTHOG_HOST` — default `https://us.i.posthog.com`
+- `XAI_API_KEY` — enables Grok work-order coach (`/api/assist`)
+- `XAI_MODEL` / `WRINGER_GROK_MODEL` — optional, default `grok-4.5`
 

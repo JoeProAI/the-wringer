@@ -5,8 +5,6 @@ import { buildContract, buildPrompt } from "../lib/protocol";
 
 const EMPTY_AC = { text: "", kind: "AUTO", check: "", expect: "" };
 
-// Mega MECHA Run pricing (mirrors app/api/checkout/route.js defaults): base $10,
-// +$0.35 per agent over 4, capped at $40. Agents 3-4 stay at the $10 minimum.
 const megaPriceCents = (a) => {
   const n = Math.max(3, Math.min(100, Number(a) || 0));
   return n <= 4 ? 1000 : Math.min(1000 + 35 * (n - 4), 4000);
@@ -28,6 +26,10 @@ export default function Home() {
   const [mechaAgents, setMechaAgents] = useState(24);
   const [mechaProgress, setMechaProgress] = useState([]);
   const [mechaReport, setMechaReport] = useState(null);
+  const [assistMsg, setAssistMsg] = useState("");
+  const [assistBusy, setAssistBusy] = useState(false);
+  const [assistLog, setAssistLog] = useState([]);
+  const [assistTips, setAssistTips] = useState([]);
 
   const formState = useCallback(
     () => ({ goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy, mechaAgents }),
@@ -37,7 +39,7 @@ export default function Home() {
   const runWithSession = useCallback(async (sessionId, form) => {
     setRunning(true);
     setError("");
-    setStatus("IN THE WRINGER — running your contract through the loop...");
+    setStatus("IN THE WRINGER — auditing your work order...");
     try {
       const res = await fetch("/api/run", {
         method: "POST",
@@ -47,7 +49,7 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Run failed");
       setOutput(data.output);
-      setStatus(`RUN COMPLETE — model: ${data.model}`);
+      setStatus(`AUDIT COMPLETE — model: ${data.model}`);
     } catch (e) {
       setError(e.message);
       setStatus("");
@@ -75,7 +77,7 @@ export default function Home() {
           return;
         }
       } catch (e) {
-        // transient poll errors are fine; keep going
+        // keep polling
       }
     }
     setError("MECHA RUN timed out after 20 minutes of polling. The sandbox may still be working.");
@@ -131,14 +133,14 @@ export default function Home() {
 
   function compile() {
     setError("");
-    if (!goal.trim()) return setError("Goal is required. The Wringer refuses vague missions.");
+    if (!goal.trim()) return setError("Goal is required. Say what must be true when the agent stops.");
     setContract(buildContract(formState()));
   }
 
   async function wringerRun(tier) {
     setError("");
     if (!goal.trim()) {
-      setError("Goal is required. The Wringer refuses vague missions.");
+      setError("Goal is required. Say what must be true when the agent stops.");
       document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
@@ -175,8 +177,43 @@ export default function Home() {
     setStatus(`${label} copied to clipboard.`);
   }
 
-  // Reviewer's "winner" counts only non-failed candidates; map it back to the
-  // full candidates array.
+  async function runAssist(e) {
+    e?.preventDefault?.();
+    const message = assistMsg.trim();
+    if (!message || assistBusy) return;
+    setAssistBusy(true);
+    setError("");
+    setAssistLog((log) => [...log, { role: "user", text: message }]);
+    setAssistMsg("");
+    try {
+      const res = await fetch("/api/assist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, form: formState() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Assist failed");
+      if (data.form) {
+        setGoal(data.form.goal || "");
+        setAcs(data.form.acs?.length ? data.form.acs : [{ ...EMPTY_AC }]);
+        setNonGoals(data.form.nonGoals || "");
+        setMaxIterations(data.form.maxIterations || 30);
+        setPreauthorized(data.form.preauthorized || "");
+        setContract(buildContract(data.form));
+      }
+      if (data.tips?.length) setAssistTips(data.tips);
+      setAssistLog((log) => [
+        ...log,
+        { role: "assistant", text: data.reply || "Draft filled into the form. Review it before you pay." },
+      ]);
+      setStatus("Grok filled the work order. Read it, then audit or run.");
+    } catch (err) {
+      setAssistLog((log) => [...log, { role: "assistant", text: `Could not draft that: ${err.message}` }]);
+    } finally {
+      setAssistBusy(false);
+    }
+  }
+
   const mechaWinnerIdx = (() => {
     if (!mechaReport?.winner || !mechaReport.candidates) return -1;
     let n = 0;
@@ -191,7 +228,7 @@ export default function Home() {
   })();
 
   const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-    "I just put my agent task through The Wringer. It auto-repaired my acceptance criteria and graded the whole contract. Brutal."
+    "I put my agent task through The Wringer. Clear goal, checkable criteria, real verdict."
   )}&url=${encodeURIComponent("https://thewringer.ai")}`;
 
   const megaOn = mechaStrategy === "mega";
@@ -199,88 +236,149 @@ export default function Home() {
 
   return (
     <main>
-      {/* HERO */}
       <section className="hero">
         <div className="hero-bg" />
         <div className="hero-inner">
-          <span className="hero-kicker mono">Loop Protocol v5.0 · No fabricated SUCCESS</span>
+          <span className="hero-kicker mono">Turn vague agent ideas into real work orders</span>
           <h1>
             The
             <br />
             <span className="red">Wringer</span>
           </h1>
           <p className="hero-sub">
-            Most agent tasks fail before the agent even starts — vague goals, unverifiable criteria,
-            no safety gates. Write yours down, and The Wringer will press it flat: audit it for $1,
-            or execute it for real through a multi-agent swarm for $10.
+            Agents fail on mushy goals. Describe what you want in plain English — or talk it through with Grok —
+            and The Wringer turns it into a tight work order. Then pay $1 for a brutal audit, or $10 for a real
+            multi-agent MECHA run that has to prove the result.
           </p>
           <div className="hero-ctas">
-            <a className="btn-stamp" href="#work-order">Put it through the press</a>
+            <a className="btn-stamp" href="#work-order">Build a work order</a>
             <a className="btn-outline" href="#how">How it works</a>
           </div>
         </div>
       </section>
 
-      {/* STEPS */}
       <section className="steps" id="how">
         <div className="steps-inner">
           <div className="step">
             <div className="num">Step 01</div>
-            <h3>Write the work order</h3>
-            <p>One-sentence goal, mechanically checkable acceptance criteria, explicit non-goals. The form forces precision.</p>
+            <h3>Name the outcome</h3>
+            <p>
+              One clear goal, a few checks anyone could verify, and what is out of scope.
+              Chat with Grok if you only have a rough idea — it fills the form for you.
+            </p>
           </div>
           <div className="step">
             <div className="num">Step 02</div>
-            <h3>Through the press</h3>
-            <p>$1 — a brutal audit + 5-iteration dry-run grades your contract. $10 — the real MECHA orchestrator executes it: Claude, Codex, and Grok fan out in an isolated sandbox, a reviewer synthesizes.</p>
+            <h3>Pick the press</h3>
+            <p>
+              $1 Audit stress-tests the work order itself. $10 MECHA Run actually executes it with Claude, Codex,
+              and Grok workers in a sandbox, then a reviewer collapses the answers.
+            </p>
           </div>
           <div className="step">
             <div className="num">Step 03</div>
-            <h3>Get the verdict</h3>
-            <p>A graded verdict or a final report with a real exit code and model cost. Honest failure outranks fabricated success. Always.</p>
+            <h3>Read the verdict</h3>
+            <p>
+              Audits grade weak criteria and dry-run the loop. MECHA runs return a real exit code, cost, winner,
+              and full evidence chain. Honest failure beats fake SUCCESS.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* WORK ORDER + TIERS */}
       <section className="shop" id="work-order">
         <div className="ticket">
           <div className="ticket-head">
             <h2>Work Order</h2>
-            <span className="no">FORM W-1 · LOOP PROTOCOL v5.0</span>
+            <span className="no">FORM W-1 · WHAT THE AGENT MUST PROVE</span>
           </div>
 
-          <label>Goal (one sentence — what must be true when the agent stops)</label>
-          <textarea value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="Ship a working /healthz endpoint that returns 200 with build SHA" />
+          <div className="assist">
+            <div className="assist-head mono">Grok work-order coach</div>
+            <p className="field-help">
+              Dump the messy version here. Grok turns it into a goal, checkable criteria, and non-goals,
+              then drops them into the fields below.
+            </p>
+            <div className="assist-log">
+              {assistLog.length === 0 && (
+                <div className="assist-bubble assistant">
+                  Example: &quot;I need an agent to add a /healthz route that returns 200 and the git SHA, no other refactors.&quot;
+                </div>
+              )}
+              {assistLog.map((m, i) => (
+                <div key={i} className={`assist-bubble ${m.role}`}>{m.text}</div>
+              ))}
+            </div>
+            <form className="assist-form" onSubmit={runAssist}>
+              <input
+                value={assistMsg}
+                onChange={(e) => setAssistMsg(e.target.value)}
+                placeholder="Describe the job in plain English..."
+                disabled={assistBusy || running}
+              />
+              <button className="btn-stamp" type="submit" disabled={assistBusy || running || !assistMsg.trim()}>
+                {assistBusy ? <span className="blink">Drafting…</span> : "Fill form"}
+              </button>
+            </form>
+          </div>
 
-          <label>Acceptance Criteria (each must be mechanically checkable)</label>
+          <label>Goal</label>
+          <p className="field-help">One sentence. What must be true when the agent is done — not the steps, the finished state.</p>
+          <textarea
+            value={goal}
+            onChange={(e) => setGoal(e.target.value)}
+            placeholder="A /healthz endpoint returns HTTP 200 and includes the current git SHA in the body"
+          />
+
+          <label>Done checks</label>
+          <p className="field-help">
+            Each line should be something you can prove with a command, URL, file, or screenshot.
+            AUTO = machine-checkable. HUMAN = you have to look.
+          </p>
           {acs.map((ac, i) => (
             <div className="ac-row" key={i}>
               <select value={ac.kind} onChange={(e) => setAcs(acs.map((a, j) => (j === i ? { ...a, kind: e.target.value } : a)))}>
                 <option value="AUTO">AUTO</option>
                 <option value="HUMAN">HUMAN</option>
               </select>
-              <input value={ac.text} placeholder={`AC-${i + 1}: e.g. curl /healthz returns 200 and body contains the git SHA`} onChange={(e) => setAcs(acs.map((a, j) => (j === i ? { ...a, text: e.target.value } : a)))} />
+              <input
+                value={ac.text}
+                placeholder={`Check ${i + 1}: e.g. curl -s localhost:3000/healthz returns 200 and contains the SHA`}
+                onChange={(e) => setAcs(acs.map((a, j) => (j === i ? { ...a, text: e.target.value } : a)))}
+              />
               <button className="btn-ghost" onClick={() => setAcs(acs.filter((_, j) => j !== i))} disabled={acs.length === 1}>✕</button>
             </div>
           ))}
-          <button className="btn-ghost" onClick={() => setAcs([...acs, { ...EMPTY_AC }])}>+ Add criterion</button>
+          <button className="btn-ghost" onClick={() => setAcs([...acs, { ...EMPTY_AC }])}>+ Add check</button>
 
-          <label>Non-goals (explicitly out of scope)</label>
-          <input value={nonGoals} onChange={(e) => setNonGoals(e.target.value)} placeholder="No refactors, no dependency upgrades, no prod deploys" />
+          <label>Out of scope</label>
+          <p className="field-help">What the agent must not touch. This stops drive-by refactors and surprise deploys.</p>
+          <input value={nonGoals} onChange={(e) => setNonGoals(e.target.value)} placeholder="No dependency upgrades, no UI redesign, no production deploy" />
 
-          <label>Max iterations</label>
+          <label>Max attempts</label>
+          <p className="field-help">How many loop iterations before it must stop. 20-40 is normal. Tiny jobs can be 15.</p>
           <input type="number" min="5" max="100" value={maxIterations} onChange={(e) => setMaxIterations(parseInt(e.target.value || "30", 10))} />
 
-          <label>Preauthorized irreversible / outward actions (verbatim, or leave empty)</label>
-          <input value={preauthorized} onChange={(e) => setPreauthorized(e.target.value)} placeholder='e.g. "git push origin feature-branch"' />
+          <label>Allowed risky actions</label>
+          <p className="field-help">
+            Only list irreversible or outward actions you already approve, word for word.
+            Leave blank if it should not push, email, buy, or delete anything.
+          </p>
+          <input value={preauthorized} onChange={(e) => setPreauthorized(e.target.value)} placeholder='Optional: git push origin feature/healthz' />
 
           <div className="row">
-            <button className="btn-ghost" onClick={compile}>Compile contract</button>
+            <button className="btn-ghost" onClick={compile}>Preview compiled contract</button>
             {contract && <button className="btn-ghost" onClick={() => copy(buildPrompt(formState()), "Full protocol prompt")}>Copy full prompt</button>}
           </div>
           {status && <div className="status">{status}</div>}
           {error && <div className="status error">{error}</div>}
+          {assistTips.length > 0 && (
+            <ul className="tips">
+              {assistTips.map((t, i) => (
+                <li key={i}>{t}</li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <aside className="tiers">
@@ -288,11 +386,11 @@ export default function Home() {
             <div className="price">$1</div>
             <h3>The Audit</h3>
             <p>
-              Your contract gets compiled into Loop Protocol v5.0, audited, dry-run for 5 iterations,
-              and graded. Weak criteria get repaired. Instant.
+              Stress-tests the work order itself. Grades weak criteria, dry-runs the loop for a few iterations,
+              and tells you what would break before you spend real agent time.
             </p>
             <button className="btn-stamp" onClick={() => wringerRun("audit")} disabled={running}>
-              {running ? <span className="blink">In the wringer…</span> : "Put it through — $1"}
+              {running ? <span className="blink">In the wringer…</span> : "Audit work order — $1"}
             </button>
             <p className="promo-hint">Have a press pass code? Enter it at checkout.</p>
           </div>
@@ -301,9 +399,8 @@ export default function Home() {
             <div className="price">{megaOn ? fmtUSD(megaCents) : "$10"}</div>
             <h3>MECHA Run</h3>
             <p>
-              Real execution, not a dry-run. The MECHA orchestrator dispatches your contract to a swarm of
-              worker agents — Claude, Codex, Grok lineages — in an isolated sandbox. A reviewer synthesizes
-              the best answer. Final report + exit code.
+              Real execution in an isolated sandbox. Multiple worker agents take the same work order,
+              then a reviewer picks or merges the best answer. You get the final report, exit code, and evidence.
             </p>
             <label>Strategy</label>
             <select value={mechaStrategy} onChange={(e) => setMechaStrategy(e.target.value)}>
@@ -328,10 +425,8 @@ export default function Home() {
                   onChange={(e) => setMechaAgents(parseInt(e.target.value, 10))}
                 />
                 <p className="promo-hint">
-                  {mechaAgents} real agents fan out across Claude / Codex / Grok lineages in
-                  concurrency-limited waves, then a tournament reviewer (judge pods → winners advance)
-                  collapses them into one verified answer. More agents ≠ linearly better — the trust is
-                  the verification bracket. Min run stays $10.
+                  {mechaAgents} agents fan out across Claude / Codex / Grok lineages, then a tournament reviewer
+                  collapses them. More agents is not always better — verification is the point. Min run stays $10.
                 </p>
               </div>
             )}
@@ -342,7 +437,7 @@ export default function Home() {
               ) : megaOn ? (
                 `MEGA MECHA Run — ${fmtUSD(megaCents)} · ${mechaAgents} agents`
               ) : (
-                "MECHA Run — $10"
+                "Run with MECHA — $10"
               )}
             </button>
             <p className="promo-hint">Press pass codes work here too.</p>
@@ -350,11 +445,45 @@ export default function Home() {
         </aside>
       </section>
 
-      {/* RESULTS */}
+      <section className="guide" id="read-results">
+        <div className="guide-inner">
+          <h2>How to read what comes back</h2>
+          <div className="guide-grid">
+            <div>
+              <h3>Audit ($1)</h3>
+              <ul>
+                <li><strong>Repaired criteria</strong> means your checks were too vague. Keep the repairs unless they changed intent.</li>
+                <li><strong>Dry-run grades</strong> show whether the loop could even pretend to verify the work.</li>
+                <li>If the audit says the goal is uncheckable, fix the form before paying for MECHA.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>MECHA Run ($10+)</h3>
+              <ul>
+                <li><strong>Exit 0 SUCCESS</strong> = all checks verified with evidence. Rare and earned.</li>
+                <li><strong>PARTIAL / NEEDS_HUMAN / STALLED</strong> is still useful — read what failed and why.</li>
+                <li><strong>Winner / candidates</strong> is the evidence chain. Open the winner first, then compare losers.</li>
+                <li><strong>Model cost</strong> is LLM spend inside the sandbox, separate from what you paid The Wringer.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Good inputs look like</h3>
+              <ul>
+                <li>Goal names a finished state: &quot;endpoint returns X&quot;, not &quot;work on health checks&quot;.</li>
+                <li>Each check could be proven by a stranger with a terminal or browser.</li>
+                <li>Out of scope blocks surprise rewrites.</li>
+                <li>Risky actions stay empty unless you truly want push/email/delete.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="results" id="results">
         {contract && (
           <div className="panel">
             <h2>Compiled Contract</h2>
+            <p className="field-help">Machine form of your work order. This is what gets audited or executed.</p>
             <pre className="output">{contract}</pre>
           </div>
         )}
@@ -362,6 +491,7 @@ export default function Home() {
         {(mechaProgress.length > 0 || mechaReport) && (
           <div className="panel">
             <h2>MECHA Run Telemetry</h2>
+            <p className="field-help">Live breadcrumbs from the sandbox. Workers answering, reviewers judging, bracket rounds if mega.</p>
             <pre className="output">
               {mechaProgress
                 .map((p) => {
@@ -464,7 +594,10 @@ export default function Home() {
 
         {output && (
           <div className="panel">
-            <h2>The Verdict</h2>
+            <h2>The Audit Verdict</h2>
+            <p className="field-help">
+              Read repaired criteria first, then the dry-run notes. If checks are still mushy, fix the form and audit again before a MECHA run.
+            </p>
             <pre className="output">{output}</pre>
             <div className="row">
               <button className="btn-ghost" onClick={() => copy(output, "Verdict")}>Copy verdict</button>
@@ -475,8 +608,8 @@ export default function Home() {
       </section>
 
       <div className="footer">
-        LOOP PROTOCOL v5.0 — built by <a href="https://x.com/JoePro" target="_blank" rel="noreferrer">@JoePro</a> × Devin.
-        One run = one paid audit. The Wringer never fabricates a SUCCESS.
+        Built by <a href="https://x.com/JoePro" target="_blank" rel="noreferrer">@JoePro</a>.
+        One paid run, one honest verdict. The Wringer never fabricates a SUCCESS.
       </div>
     </main>
   );
