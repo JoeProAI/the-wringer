@@ -31,13 +31,13 @@ export async function POST(req) {
   const product =
     tier === "mecha"
       ? {
-          name: isMega ? `The Wringer — MEGA MECHA RUN (${megaAgents} agents)` : "The Wringer — MECHA RUN",
+          name: isMega ? `The Wringer - MEGA MECHA RUN (${megaAgents} agents)` : "The Wringer - MECHA RUN",
           description: isMega
             ? `${megaAgents} real agents across Claude/Codex/Grok lineages, judged by a tournament reviewer in an isolated sandbox (Loop Protocol v5.0)`
             : "Real agent execution of your contract in an isolated sandbox (Loop Protocol v5.0, shell access, hard cost ceiling)",
         }
       : {
-          name: "The Wringer — one run",
+          name: "The Wringer - one run",
           description: "One agent-contract audit + dry-run through The Wringer (Loop Protocol v5.0)",
         };
   const session = await stripe.checkout.sessions.create({

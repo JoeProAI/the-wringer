@@ -1,4 +1,4 @@
-const SITE_URL = process.env.SITE_URL || "https://thewringer.ai";
+import { SITE_URL } from "../lib/seo";
 
 export default function robots() {
   return {
