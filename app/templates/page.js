@@ -104,12 +104,28 @@ const TEMPLATES = [
 
 const article = {
   "@context": "https://schema.org",
-  "@type": "Article",
-  headline: "AI agent work order templates that actually verify",
-  description:
-    "Ready-made work orders for common AI agent jobs, each with checkable acceptance criteria and boundaries. Click any template to prefill the Wringer form.",
-  publisher: { "@type": "Organization", name: "The Wringer" },
-  mainEntityOfPage: "https://www.thewringer.ai/templates",
+  "@graph": [
+    {
+      "@type": "Article",
+      headline: "AI agent work order templates that actually verify",
+      description:
+        "Ready-made work orders for common AI agent jobs, each with checkable acceptance criteria and boundaries. Click any template to prefill the Wringer form.",
+      publisher: { "@type": "Organization", name: "The Wringer" },
+      mainEntityOfPage: "https://www.thewringer.ai/templates",
+    },
+    {
+      "@type": "ItemList",
+      name: "AI agent work order templates",
+      numberOfItems: TEMPLATES.length,
+      itemListElement: TEMPLATES.map((t, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: t.title,
+        description: t.desc,
+        url: `https://www.thewringer.ai/templates#${encodeDraftParam(t.form)}`,
+      })),
+    },
+  ],
 };
 
 export default function TemplatesPage() {

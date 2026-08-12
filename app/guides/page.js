@@ -41,6 +41,25 @@ export default function GuidesPage() {
             Read the guide
           </a>
         </div>
+        <div className="tpl-card">
+          <h3>How to write an AI agent work order</h3>
+          <p>
+            The four parts of a contract that survives contact: a goal that names a finished
+            state, checkable criteria, boundaries, and a budget.
+          </p>
+          <a className="btn-stamp" href="/guides/how-to-write-an-ai-agent-work-order">
+            Read the guide
+          </a>
+        </div>
+        <div className="tpl-card">
+          <h3>How to verify AI agent work</h3>
+          <p>
+            Do not trust the report. Re-run the checks yourself and demand an evidence chain.
+          </p>
+          <a className="btn-stamp" href="/guides/how-to-verify-ai-agent-work">
+            Read the guide
+          </a>
+        </div>
       </div>
 
       <h2>Start from a template</h2>

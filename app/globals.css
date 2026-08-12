@@ -754,6 +754,28 @@ details.worker pre.output { border: 0; border-top: 1px solid var(--line); margin
   line-height: 1.6;
 }
 
+/* Home guides strip */
+.home-guides {
+  border-top: 1px solid var(--line);
+  background: #16120d;
+  padding: 42px 28px;
+}
+.home-guides h2 {
+  font-family: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  text-transform: uppercase;
+  font-size: 30px;
+  letter-spacing: 0.5px;
+  margin: 0 0 6px;
+}
+.home-guides-sub {
+  color: var(--paper-dim);
+  font-size: 14px;
+  margin: 0 0 20px;
+}
+.home-guides .tpl-card {
+  background: #1f1812;
+}
+
 /* Home footer sitemap links */
 .footer-sitemap {
   display: flex;

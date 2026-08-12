@@ -1,0 +1,5 @@
+Contact: https://x.com/JoePro
+Contact: mailto:joe@joepro.ai
+Expires: 2027-08-12T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://www.thewringer.ai/.well-known/security.txt
