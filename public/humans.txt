@@ -1,0 +1,9 @@
+# The Wringer (https://www.thewringer.ai)
+
+Built by Joseph Gaither (JoePro).
+
+- X: https://x.com/JoePro
+- GitHub: https://github.com/JoeProAI
+- Product: https://www.thewringer.ai
+
+Last update: 2026-08-12

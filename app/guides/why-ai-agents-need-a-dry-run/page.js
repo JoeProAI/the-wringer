@@ -27,6 +27,11 @@ export default function DryRunGuide() {
       title="Why AI agents need a dry run before you pay for real execution"
       updated="August 8, 2026"
       article={article}
+      crumbs={[
+        { name: "Home", path: "/" },
+        { name: "Guides", path: "/guides" },
+        { name: "Why AI agents need a dry run" },
+      ]}
     >
       <p>
         Every agent run has two phases, and only one of them costs real money. The first phase is
