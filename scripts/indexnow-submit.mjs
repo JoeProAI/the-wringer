@@ -15,6 +15,8 @@ const URLS = [
   "https://www.thewringer.ai/guides",
   "https://www.thewringer.ai/guides/acceptance-criteria-for-ai-agents",
   "https://www.thewringer.ai/guides/why-ai-agents-need-a-dry-run",
+  "https://www.thewringer.ai/guides/how-to-write-an-ai-agent-work-order",
+  "https://www.thewringer.ai/guides/how-to-verify-ai-agent-work",
 ];
 
 const ENDPOINTS = ["https://api.indexnow.org/indexnow", "https://www.bing.com/indexnow"];

@@ -13,6 +13,7 @@ import {
 } from "../lib/draft";
 import { extractRepairedForm } from "../lib/parse-audit";
 import { FAQS } from "../lib/faq";
+import { track } from "../lib/analytics";
 
 const EMPTY_AC = { text: "", kind: "AUTO", check: "", expect: "" };
 
@@ -84,6 +85,7 @@ export default function Home() {
       setOutput(data.output);
       const repaired = extractRepairedForm(data.output || "");
       setRepairedPreview(repaired);
+      track("audit_complete", { model: data.model, repaired: Boolean(repaired) });
       setStatus(
         repaired
           ? `AUDIT COMPLETE - model: ${data.model}. Repairs ready to apply.`
@@ -111,6 +113,11 @@ export default function Home() {
         setMechaProgress(data.progress || []);
         if (data.done && data.report) {
           setMechaReport(data.report);
+          track("mecha_complete", {
+            exit_code: data.report.exit_code,
+            strategy: data.report.strategy,
+            cost_usd: Number(data.report.cost_usd || 0),
+          });
           setStatus(
             `MECHA RUN COMPLETE - exit ${data.report.exit_code} ${data.report.exit_name} · ${data.report.strategy} · $${Number(
               data.report.cost_usd || 0
@@ -229,6 +236,7 @@ export default function Home() {
     localStorage.setItem("wringer_form", JSON.stringify(form));
     setRunning(true);
     setStatus("Opening payment gate...");
+    track("checkout_started", { tier });
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -267,6 +275,7 @@ export default function Home() {
     const saved = saveDraftLocal(form);
     setDraftNote(`Draft saved ${new Date(saved.savedAt).toLocaleString()}`);
     setStatus("Draft saved on this device.");
+    track("draft_saved");
   }
 
   async function copyShareLink() {
@@ -320,6 +329,7 @@ export default function Home() {
       { save: true, note: "Applied audit repairs to form" }
     );
     setStatus("Audit repairs applied to the work order. Review, then run again or hit MECHA.");
+    track("repairs_applied");
     document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -343,6 +353,7 @@ export default function Home() {
         applyForm(data.form, { save: true, note: "Draft saved from Grok" });
       }
       if (data.tips?.length) setAssistTips(data.tips);
+      track("coach_filled", { tips: data.tips?.length || 0 });
       setAssistLog((log) => [
         ...log,
         { role: "assistant", text: data.reply || "Draft is in the form below. Tweak anything, then hit audit or MECHA." },
@@ -371,7 +382,7 @@ export default function Home() {
 
   const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
     "I put my agent task through The Wringer. Clear goal, real checks, honest verdict."
-  )}&url=${encodeURIComponent("https://thewringer.ai")}`;
+  )}&url=${encodeURIComponent("https://www.thewringer.ai")}`;
 
   const megaOn = mechaStrategy === "mega";
   const megaCents = megaPriceCents(mechaAgents);
@@ -885,6 +896,45 @@ export default function Home() {
             </div>
           </div>
         )}
+      </section>
+
+      <section className="home-guides">
+        <div className="faq-inner">
+          <h2>Write work orders that verify</h2>
+          <p className="home-guides-sub">
+            Four short guides on the part of agent work everybody skips: the contract.
+          </p>
+          <div className="tpl-grid">
+            <div className="tpl-card">
+              <h3>Acceptance criteria for AI agents</h3>
+              <p>Write checks a stranger can prove and an agent cannot fake.</p>
+              <a className="btn-stamp" href="/guides/acceptance-criteria-for-ai-agents">
+                Read
+              </a>
+            </div>
+            <div className="tpl-card">
+              <h3>Why AI agents need a dry run</h3>
+              <p>Most failures are baked into the contract before the first tool call.</p>
+              <a className="btn-stamp" href="/guides/why-ai-agents-need-a-dry-run">
+                Read
+              </a>
+            </div>
+            <div className="tpl-card">
+              <h3>How to write an AI agent work order</h3>
+              <p>Goal, checks, boundaries, budget. The four parts that matter.</p>
+              <a className="btn-stamp" href="/guides/how-to-write-an-ai-agent-work-order">
+                Read
+              </a>
+            </div>
+            <div className="tpl-card">
+              <h3>How to verify AI agent work</h3>
+              <p>Do not trust the report. Re-run the checks and demand evidence.</p>
+              <a className="btn-stamp" href="/guides/how-to-verify-ai-agent-work">
+                Read
+              </a>
+            </div>
+          </div>
+        </div>
       </section>
 
       <section className="faq" id="faq">

@@ -20,6 +20,8 @@ actions:
 - [Guides](https://www.thewringer.ai/guides)
 - [Acceptance criteria for AI agents](https://www.thewringer.ai/guides/acceptance-criteria-for-ai-agents)
 - [Why AI agents need a dry run](https://www.thewringer.ai/guides/why-ai-agents-need-a-dry-run)
+- [How to write an AI agent work order](https://www.thewringer.ai/guides/how-to-write-an-ai-agent-work-order)
+- [How to verify AI agent work](https://www.thewringer.ai/guides/how-to-verify-ai-agent-work)
 
 ## Pricing
 
