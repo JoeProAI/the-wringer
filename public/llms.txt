@@ -1,0 +1,34 @@
+# The Wringer
+
+> Turn vague AI agent ideas into checkable work orders, then audit or execute them.
+
+The Wringer is a paid web tool at https://www.thewringer.ai. It turns plain English into a
+structured work order (goal, checkable acceptance criteria, boundaries), then offers two paid
+actions:
+
+- **$1 Audit**: stress-tests the contract with a hostile reviewer, returns a graded dry run
+  plus a repaired work order you can apply in one click.
+- **$10+ MECHA Run**: real multi-agent execution in an isolated Daytona sandbox, with an
+  evidence chain and an independent reviewer verdict.
+
+## Key pages
+
+- [Home](https://www.thewringer.ai/): build a work order with the Grok coach (free)
+- [The $1 Audit](https://www.thewringer.ai/audit)
+- [MECHA runs](https://www.thewringer.ai/mecha)
+- [Work order templates](https://www.thewringer.ai/templates)
+- [Guides](https://www.thewringer.ai/guides)
+- [Acceptance criteria for AI agents](https://www.thewringer.ai/guides/acceptance-criteria-for-ai-agents)
+- [Why AI agents need a dry run](https://www.thewringer.ai/guides/why-ai-agents-need-a-dry-run)
+
+## Pricing
+
+- Grok coach and work order form: free
+- Audit: $1 per run
+- MECHA run: starts at $10, scales with agent count (capped)
+
+## Notes for AI crawlers
+
+- Endpoints under /api/ are internal and are not documentation.
+- There is no public API or developer documentation site yet.
+- The canonical host is https://www.thewringer.ai (the apex domain redirects).

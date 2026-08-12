@@ -27,6 +27,11 @@ export default function AcceptanceCriteriaGuide() {
       title="Acceptance criteria for AI agents: write checks that cannot be faked"
       updated="August 8, 2026"
       article={article}
+      crumbs={[
+        { name: "Home", path: "/" },
+        { name: "Guides", path: "/guides" },
+        { name: "Acceptance criteria for AI agents" },
+      ]}
     >
       <p>
         When an agent run goes wrong, it rarely goes wrong at the tool call. It goes wrong at the

@@ -1,5 +1,10 @@
 import { SITE_URL } from "../lib/seo";
 
+// Static lastmod: content pages only change when we ship a content pass,
+// and build-time new Date() makes every URL look freshly changed on every
+// deploy. Bump this constant when the pages actually change.
+const LAST_MOD = "2026-08-08T11:13:15.052Z";
+
 const PAGES = [
   { path: "/", priority: 1, freq: "weekly" },
   { path: "/audit", priority: 0.9, freq: "monthly" },
@@ -13,7 +18,7 @@ const PAGES = [
 export default function sitemap() {
   return PAGES.map((p) => ({
     url: `${SITE_URL}${p.path === "/" ? "" : p.path}`,
-    lastModified: new Date(),
+    lastModified: LAST_MOD,
     changeFrequency: p.freq,
     priority: p.priority,
   }));
