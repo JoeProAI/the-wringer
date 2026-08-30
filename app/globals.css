@@ -1277,3 +1277,63 @@ details.worker pre.output { border: 0; border-top: 1px solid var(--line); margin
     width: 100%;
   }
 }
+.content-example-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.content-example-actions .btn-stamp,
+.content-example-actions .btn-ghost {
+  text-decoration: none;
+}
+
+/* ---------- EXAMPLE ACTIONS (Homepage) ---------- */
+.example-img-link {
+  display: block;
+  flex-shrink: 0;
+}
+.example-img-link:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+.example-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.example-actions .btn-stamp,
+.example-actions .btn-ghost {
+  text-decoration: none;
+}
+
+/* ---------- VERIFIED ACTIONS ---------- */
+.verified-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.verified-actions .btn-stamp,
+.verified-actions .btn-ghost {
+  text-decoration: none;
+}
+.verified-gallery a {
+  display: block;
+  flex-shrink: 0;
+}
+.verified-gallery a:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+
+/* ---------- CONTENT EXAMPLE GALLERY LINKS ---------- */
+.content-example-gallery a {
+  display: block;
+  flex-shrink: 0;
+}
+.content-example-gallery a:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}

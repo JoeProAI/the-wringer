@@ -518,29 +518,68 @@ Repaired criteria:
               <div className="example-sample">
                 <div className="example-label mono">GAMMA HD presentation (operator example)</div>
                 <div className="example-gallery">
-                  <img 
-                    src="/examples/gamma-example-cover.png" 
-                    alt="GAMMA report cover slide showing exit status SUCCESS, reviewer confidence 0.9, winner Claude"
-                    className="example-img"
-                    loading="lazy"
-                  />
-                  <img 
-                    src="/examples/gamma-example-content.png" 
-                    alt="GAMMA report content slide explaining Rayleigh scattering mechanism with citations"
-                    className="example-img"
-                    loading="lazy"
-                  />
-                  <img 
-                    src="/examples/gamma-example-refs.png" 
-                    alt="GAMMA report references and conclusion slide"
-                    className="example-img"
-                    loading="lazy"
-                  />
+                  <a 
+                    href="https://gamma.app/docs/587k5a9m9kd8kt5" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="example-img-link"
+                  >
+                    <img 
+                      src="/examples/gamma-example-cover.png" 
+                      alt="GAMMA report cover slide showing exit status SUCCESS, reviewer confidence 0.9, winner Claude"
+                      className="example-img"
+                      loading="lazy"
+                    />
+                  </a>
+                  <a 
+                    href="https://gamma.app/docs/587k5a9m9kd8kt5" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="example-img-link"
+                  >
+                    <img 
+                      src="/examples/gamma-example-content.png" 
+                      alt="GAMMA report content slide explaining Rayleigh scattering mechanism with citations"
+                      className="example-img"
+                      loading="lazy"
+                    />
+                  </a>
+                  <a 
+                    href="https://gamma.app/docs/587k5a9m9kd8kt5" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="example-img-link"
+                  >
+                    <img 
+                      src="/examples/gamma-example-refs.png" 
+                      alt="GAMMA report references and conclusion slide"
+                      className="example-img"
+                      loading="lazy"
+                    />
+                  </a>
                 </div>
                 <p className="example-note">
-                  This is a real operator-run MECHA case (sky-blue, triumvirate strategy). 
-                  The HD presentation uses GPT Image 2 and takes about 3 minutes to generate.
+                  Real operator-run MECHA case (sky-blue, triumvirate strategy). 
+                  Click any slide to open the full deck.
                 </p>
+                <div className="example-actions">
+                  <a 
+                    href="https://gamma.app/docs/587k5a9m9kd8kt5" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn-stamp"
+                  >
+                    View HD Presentation
+                  </a>
+                  <a 
+                    href="https://assets.api.gamma.app/export/pdf/587k5a9m9kd8kt5/f1ecf4b45609e28c9b794b26153b6e99/MECHA-Run-Report-mecha-1788103355-4bd3f4.pdf" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn-ghost"
+                  >
+                    Download PDF
+                  </a>
+                </div>
               </div>
               <a className="btn-ghost example-cta" href="/mecha">How MECHA runs work</a>
             </div>
