@@ -26,6 +26,8 @@ Fill out your agent mission contract and put it through **LOOP PROTOCOL v5.0**:
 - `NEXT_PUBLIC_POSTHOG_HOST` — default `https://us.i.posthog.com`
 - `XAI_API_KEY` — enables Grok work-order coach (`/api/assist`)
 - `XAI_MODEL` / `WRINGER_GROK_MODEL` — optional, default `grok-4.5`
+- `GAMMA_APP_API_KEY` — Gamma.app API key. Injected into the Daytona sandbox. Without it, HD presentation silently skips.
+- `GAMMA_MODEL` — OpenRouter model for the HQ text GAMMA report. Default `anthropic/claude-opus-4.1`. Note: presentation images use Gamma `imageOptions.model=gpt-image-2`, which is not configurable via env var.
 
 
 ## Grok coach rate limit
