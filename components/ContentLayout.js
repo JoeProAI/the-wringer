@@ -6,6 +6,7 @@ const NAV = [
   { href: "/audit", label: "$1 Audit" },
   { href: "/mecha", label: "MECHA runs" },
   { href: "/templates", label: "Templates" },
+  { href: "/verified", label: "Verified" },
   { href: "/guides", label: "Guides" },
 ];
 
@@ -73,6 +74,7 @@ export default function ContentLayout({ kicker, title, updated, article = null, 
           <a href="/audit">$1 Audit</a>
           <a href="/mecha">MECHA runs</a>
           <a href="/templates">Work order templates</a>
+          <a href="/verified">Verified Wringers</a>
           <a href="/guides/acceptance-criteria-for-ai-agents">Acceptance criteria</a>
           <a href="/guides/why-ai-agents-need-a-dry-run">Dry runs</a>
         </div>

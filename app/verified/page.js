@@ -1,0 +1,132 @@
+import ContentLayout from "../../components/ContentLayout";
+import { buildMetadata } from "../../lib/seo";
+import { encodeDraftParam } from "../../lib/draft";
+import { VERIFIED_CASES } from "../../lib/verified-cases";
+import { SITE_URL } from "../../lib/seo";
+
+export const metadata = buildMetadata({
+  title: "Verified Wringers",
+  description:
+    "See what a Wringer result looks like before you pay. Four checkable questions with operator evidence, real citations, and work orders you can run yourself.",
+  path: "/verified",
+});
+
+const article = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      headline: "Verified Wringers: checkable questions with real evidence",
+      description:
+        "Operator-authored case files showing what a Wringer investigation looks like. Each case prefills the live form so you can run the same contract yourself.",
+      publisher: { "@type": "Organization", name: "The Wringer" },
+      mainEntityOfPage: `${SITE_URL}/verified`,
+    },
+    {
+      "@type": "ItemList",
+      name: "Verified Wringer cases",
+      numberOfItems: VERIFIED_CASES.length,
+      itemListElement: VERIFIED_CASES.map((c, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: c.question,
+        description: c.summary,
+        url: `${SITE_URL}/verified#${c.id}`,
+      })),
+    },
+  ],
+};
+
+export default function VerifiedPage() {
+  return (
+    <ContentLayout
+      kicker="Verified"
+      title="See the result before you press"
+      updated="August 30, 2026"
+      article={article}
+      crumbs={[
+        { name: "Home", path: "/" },
+        { name: "Verified Wringers", path: "/verified" },
+      ]}
+    >
+      <p>
+        These are operator case files, not customer work orders. Each question is checkable by
+        anyone with public sources. The evidence cites real physics, not fabricated receipts. Press
+        the same contract yourself if you want to verify.
+      </p>
+
+      <div className="verified-grid">
+        {VERIFIED_CASES.map((c) => (
+          <article key={c.id} id={c.id} className="verified-card">
+            <h2>{c.question}</h2>
+            <p className="verified-summary">{c.summary}</p>
+
+            <div className="verified-section">
+              <h3>Work Order</h3>
+              <div className="verified-wo">
+                <div className="verified-field">
+                  <span className="verified-label">Goal</span>
+                  <span>{c.form.goal}</span>
+                </div>
+                <div className="verified-field">
+                  <span className="verified-label">Checks</span>
+                  <ul className="verified-checks">
+                    {c.form.acs.map((ac, i) => (
+                      <li key={i}>
+                        <span className="verified-kind mono">{ac.kind}</span> {ac.text}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="verified-field">
+                  <span className="verified-label">Boundaries</span>
+                  <span>{c.form.nonGoals}</span>
+                </div>
+                <div className="verified-field">
+                  <span className="verified-label">Attempt budget</span>
+                  <span>{c.form.maxIterations}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="verified-section">
+              <h3>{c.evidence.label}</h3>
+              <ul className="verified-notes">
+                {c.evidence.notes.map((note, i) => (
+                  <li key={i}>{note}</li>
+                ))}
+              </ul>
+              <div className="verified-citations">
+                <span className="verified-label">Sources</span>
+                <ul>
+                  {c.evidence.citations.map((cite, i) => (
+                    <li key={i}>
+                      <a href={cite.url} target="_blank" rel="noopener noreferrer">
+                        {cite.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <a className="btn-stamp verified-cta" href={`/?draft=${encodeDraftParam(c.form)}`}>
+              Try this contract
+            </a>
+          </article>
+        ))}
+      </div>
+
+      <h2>What these show</h2>
+      <p>
+        A Wringer contract has a goal, checkable criteria, and boundaries. The audit stress-tests
+        the contract. A MECHA run executes it in a sandbox and grades the result. These cases let
+        you see the shape of the output before you spend.
+      </p>
+      <p>
+        Every case here is a question a stranger can verify with public sources. That is the
+        standard: if you cannot prove it without guessing, it is not a real check.
+      </p>
+    </ContentLayout>
+  );
+}
