@@ -956,6 +956,7 @@ export default function Home() {
           <a href="/audit">$1 Audit</a>
           <a href="/mecha">MECHA runs</a>
           <a href="/templates">Work order templates</a>
+          <a href="/verified">Verified Wringers</a>
           <a href="/guides/acceptance-criteria-for-ai-agents">Acceptance criteria for AI agents</a>
           <a href="/guides/why-ai-agents-need-a-dry-run">Why agents need a dry run</a>
         </div>

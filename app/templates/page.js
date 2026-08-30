@@ -173,6 +173,10 @@ export default function TemplatesPage() {
         </a>{" "}
         first, then <a href="/#coach">chat with Grok</a> to draft from plain English.
       </p>
+
+      <p>
+        Or see <a href="/verified">verified cases</a> with real evidence before you spend.
+      </p>
     </ContentLayout>
   );
 }
