@@ -500,18 +500,20 @@ Repaired criteria:
               <div className="example-sample">
                 <div className="example-label mono">Sample MECHA telemetry</div>
                 <pre className="example-pre">{`[BOOT] mecha-1788103355-4bd3f4 strategy=triumvirate
-[FANOUT] triumvirate - 3 workers: claude, codex, grok
-[WORKER] claude (openrouter) engaged
-[WORKER] codex (openrouter) engaged
-[WORKER] grok (xai) engaged
-[WORKER] claude answered
-[WORKER] codex answered
-[WORKER] grok answered
-[REVIEW] Reviewer judging 3 candidates
-[REVIEW] verdict in - winner: candidate 1 (confidence 0.9)
-[GAMMA] HQ report ready · $0.0847 · 42.3s
-[GAMMA] HD presentation ready · 187.2s
-[DONE] cost=$0.1923 time=312.4s`}</pre>
+[FANOUT] triumvirate - 3 workers: Claude, Codex, Grok
+[WORKER] Claude (claude) engaged
+[WORKER] Codex (codex) engaged
+[WORKER] Grok (xai) engaged
+[WORKER] Grok answered
+[WORKER] Codex answered
+[WORKER] Claude answered
+[REVIEW] Reviewer (Claude) judging 3 candidates
+[REVIEW] Reviewer (Claude) verdict in
+[DONE] cost=$0.7714 time=363.2s
+[GAMMA] compiling HQ report (anthropic/claude-opus-4.1)
+[GAMMA] HQ report ready · $0.3171 · 63.7s
+[GAMMA] generating HD presentation
+[GAMMA] HD presentation ready · 100.6s`}</pre>
               </div>
               <div className="example-sample">
                 <div className="example-label mono">GAMMA HD presentation (operator example)</div>

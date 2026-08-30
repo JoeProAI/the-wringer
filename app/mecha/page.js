@@ -88,7 +88,7 @@ export default function MechaPage() {
           <span>EXIT 0 SUCCESS</span>
           <span>triumvirate</span>
           <span>winner: Claude (0.9)</span>
-          <span>$0.19 model cost</span>
+          <span>$0.77 + $0.32 GAMMA</span>
         </div>
         <div className="content-example-gallery">
           <img 

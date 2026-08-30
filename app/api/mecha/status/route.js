@@ -63,27 +63,46 @@ export async function POST(req) {
   } catch {}
 
   // When the run completes and we have a report, send the deliverable email
-  // exactly once. The email-sent label tracks idempotency so status polling
-  // does not re-send. Email failures are logged but do not block the result.
-  let emailSent = false;
-  if (report && sessionId && labels["email-sent"] !== "true") {
-    const emailResult = await sendMechaDeliverable({
-      report,
-      sessionId,
-      runId,
-    });
-    emailSent = emailResult.sent;
-    if (emailResult.sent) {
-      try {
-        await sandbox.setLabels({ ...labels, "email-sent": "true" });
-      } catch {
-        // Label update failed - email may be sent again on next poll, but
-        // that's better than blocking the run.
+  // exactly once. Uses both a sandbox marker file and a label for idempotency:
+  // - Marker file (.email-sent) handles the case where setLabels fails
+  // - Label allows fast check without reading the marker file
+  let emailSent = labels["email-sent"] === "true";
+  if (report && sessionId && !emailSent) {
+    // Check for marker file in case label update failed on a previous attempt
+    try {
+      const markerCheck = await sandbox.process.executeCommand(
+        `test -f "${runDir}/.email-sent" && echo EXISTS`
+      );
+      if (String(markerCheck.result || "").includes("EXISTS")) {
+        emailSent = true;
       }
+    } catch {
+      // Ignore marker check errors, proceed with send attempt
     }
-    // Log email result for debugging (no sensitive data)
-    if (!emailResult.sent && emailResult.reason) {
-      console.log(`[mecha-email] run=${runId} skipped: ${emailResult.reason}`);
+
+    if (!emailSent) {
+      const emailResult = await sendMechaDeliverable({
+        report,
+        sessionId,
+        runId,
+      });
+      emailSent = emailResult.sent;
+      if (emailResult.sent) {
+        // Write marker file first (more reliable than label update)
+        try {
+          await sandbox.process.executeCommand(
+            `echo "sent" > "${runDir}/.email-sent"`
+          );
+        } catch {
+          // Marker write failed, but email was sent - try label as backup
+        }
+        // Also update label for fast path on subsequent polls
+        try {
+          await sandbox.setLabels({ ...labels, "email-sent": "true" });
+        } catch {
+          // Label update failed but marker file should prevent re-send
+        }
+      }
     }
   }
 

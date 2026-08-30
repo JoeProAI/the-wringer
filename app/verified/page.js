@@ -129,7 +129,7 @@ export default function VerifiedPage() {
           <span className="verified-stat">EXIT 0 SUCCESS</span>
           <span className="verified-stat">triumvirate strategy</span>
           <span className="verified-stat">winner: Claude (confidence 0.9)</span>
-          <span className="verified-stat">model cost: $0.19</span>
+          <span className="verified-stat">model cost: $0.77 + $0.32 GAMMA</span>
         </div>
 
         <div className="verified-output-section">
