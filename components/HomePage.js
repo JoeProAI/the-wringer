@@ -433,6 +433,141 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="examples" id="examples">
+        <div className="examples-inner">
+          <h2>What you actually get</h2>
+          <p className="examples-sub">Three tiers. Each does something different. Here is the real output from an operator-run case.</p>
+
+          <div className="examples-grid">
+            <div className="example-tier">
+              <div className="example-tier-head">
+                <span className="example-price">Free</span>
+                <h3>Grok Coach</h3>
+              </div>
+              <p className="example-desc">
+                Describe the job in plain English. Grok drafts a work order: goal, acceptance criteria, boundaries. 
+                You get the contract shape without paying.
+              </p>
+              <div className="example-sample">
+                <div className="example-label mono">Sample work order output</div>
+                <pre className="example-pre">{`Goal: Confirm that Earth's daytime sky appears blue due to Rayleigh scattering
+
+Acceptance Criteria:
+[AUTO] Cite a peer-reviewed physics source defining Rayleigh scattering
+[AUTO] Explain why shorter wavelengths scatter more than longer ones
+[AUTO] State why the sky appears blue rather than violet
+
+Boundaries: No discussion of sunsets, no other planets`}</pre>
+              </div>
+              <a className="btn-ghost example-cta" href="/verified">See full verified cases</a>
+            </div>
+
+            <div className="example-tier">
+              <div className="example-tier-head">
+                <span className="example-price">$1</span>
+                <h3>Audit</h3>
+              </div>
+              <p className="example-desc">
+                Stress-tests the work order itself. Finds vague checks, missing boundaries, unverifiable claims. 
+                Returns a graded dry-run and a repaired contract.
+              </p>
+              <div className="example-sample">
+                <div className="example-label mono">Sample audit verdict</div>
+                <pre className="example-pre">{`<verdict>
+  grade: A
+  predicted_exit: 0 SUCCESS
+  weakest_link: All criteria cite external sources; verification is possible.
+  one_fix: Add a check for wavelength-dependent scattering intensity formula.
+</verdict>
+
+Repaired criteria:
+[AUTO] Cite peer-reviewed source (Bohren & Clothiaux or equivalent)
+[AUTO] State 1/wavelength^4 relationship for scattering intensity
+[AUTO] Explain cone-cell sensitivity difference for blue vs violet`}</pre>
+              </div>
+              <a className="btn-ghost example-cta" href="/audit">How the audit works</a>
+            </div>
+
+            <div className="example-tier example-tier-feature">
+              <div className="example-tier-head">
+                <span className="example-price">$10+</span>
+                <h3>MECHA Run</h3>
+              </div>
+              <p className="example-desc">
+                Real sandbox execution. Multiple agents take the job. A reviewer picks or merges the best. 
+                You get live telemetry, an exit code, the GAMMA HQ report, and an HD presentation.
+              </p>
+              <div className="example-sample">
+                <div className="example-label mono">Sample MECHA telemetry</div>
+                <pre className="example-pre">{`[BOOT] mecha-1788103355-4bd3f4 strategy=triumvirate
+[FANOUT] triumvirate - 3 workers: claude, codex, grok
+[WORKER] claude (openrouter) engaged
+[WORKER] codex (openrouter) engaged
+[WORKER] grok (xai) engaged
+[WORKER] claude answered
+[WORKER] codex answered
+[WORKER] grok answered
+[REVIEW] Reviewer judging 3 candidates
+[REVIEW] verdict in - winner: candidate 1 (confidence 0.9)
+[GAMMA] HQ report ready · $0.0847 · 42.3s
+[GAMMA] HD presentation ready · 187.2s
+[DONE] cost=$0.1923 time=312.4s`}</pre>
+              </div>
+              <div className="example-sample">
+                <div className="example-label mono">GAMMA HD presentation (operator example)</div>
+                <div className="example-gallery">
+                  <img 
+                    src="/examples/gamma-example-cover.png" 
+                    alt="GAMMA report cover slide showing exit status SUCCESS, reviewer confidence 0.9, winner Claude"
+                    className="example-img"
+                    loading="lazy"
+                  />
+                  <img 
+                    src="/examples/gamma-example-content.png" 
+                    alt="GAMMA report content slide explaining Rayleigh scattering mechanism with citations"
+                    className="example-img"
+                    loading="lazy"
+                  />
+                  <img 
+                    src="/examples/gamma-example-refs.png" 
+                    alt="GAMMA report references and conclusion slide"
+                    className="example-img"
+                    loading="lazy"
+                  />
+                </div>
+                <p className="example-note">
+                  This is a real operator-run MECHA case (sky-blue, triumvirate strategy). 
+                  The HD presentation uses GPT Image 2 and takes about 3 minutes to generate.
+                </p>
+              </div>
+              <a className="btn-ghost example-cta" href="/mecha">How MECHA runs work</a>
+            </div>
+          </div>
+
+          <div className="examples-exit-codes">
+            <h3>Exit codes explained</h3>
+            <div className="exit-grid">
+              <div className="exit-item">
+                <span className="exit-code mono">EXIT 0 SUCCESS</span>
+                <span className="exit-desc">Every acceptance criterion got real evidence. Rare and earned.</span>
+              </div>
+              <div className="exit-item">
+                <span className="exit-code mono">EXIT 1 PARTIAL</span>
+                <span className="exit-desc">Some criteria passed, some did not. Read what failed and why.</span>
+              </div>
+              <div className="exit-item">
+                <span className="exit-code mono">EXIT 2 NEEDS_HUMAN</span>
+                <span className="exit-desc">The run hit a check that requires human judgment.</span>
+              </div>
+              <div className="exit-item">
+                <span className="exit-code mono">EXIT 3 STALLED</span>
+                <span className="exit-desc">The swarm could not make progress. Contract may need work.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="coach" id="coach">
         <div className="coach-inner">
           <div className="coach-badge mono">Live coach</div>
