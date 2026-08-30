@@ -790,3 +790,132 @@ details.worker pre.output { border: 0; border-top: 1px solid var(--line); margin
   font-size: 13px;
 }
 .footer-sitemap a:hover { color: var(--paper); }
+
+/* ---------- VERIFIED WRINGERS ---------- */
+.verified-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin: 28px 0 40px;
+}
+.verified-card {
+  background: #1f1812;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--red);
+  padding: 24px;
+}
+.verified-card h2 {
+  font-family: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  font-size: 26px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--paper);
+  margin: 0 0 10px;
+}
+.verified-summary {
+  font-size: 15px;
+  color: var(--paper-dim);
+  margin: 0 0 20px;
+  line-height: 1.55;
+}
+.verified-section {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+.verified-section h3 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--red-bright);
+  margin: 0 0 12px;
+}
+.verified-wo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.verified-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.verified-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--paper-mut);
+}
+.verified-field > span:last-child {
+  font-size: 14px;
+  color: var(--paper-dim);
+  line-height: 1.5;
+}
+.verified-checks {
+  margin: 0;
+  padding: 0 0 0 16px;
+  font-size: 14px;
+  color: var(--paper-dim);
+  line-height: 1.5;
+}
+.verified-checks li {
+  margin: 6px 0;
+}
+.verified-kind {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  color: var(--paper-mut);
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.verified-notes {
+  margin: 0 0 14px;
+  padding: 0 0 0 18px;
+  font-size: 14px;
+  color: var(--paper-dim);
+  line-height: 1.6;
+}
+.verified-notes li {
+  margin: 6px 0;
+}
+.verified-citations {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.verified-citations ul {
+  margin: 0;
+  padding: 0 0 0 18px;
+  font-size: 13px;
+}
+.verified-citations li {
+  margin: 4px 0;
+}
+.verified-citations a {
+  color: var(--red-bright);
+  text-decoration: none;
+}
+.verified-citations a:hover {
+  text-decoration: underline;
+}
+.verified-cta {
+  display: inline-block;
+  margin-top: 20px;
+  text-align: center;
+  font-size: 15px;
+  padding: 14px 24px;
+  text-decoration: none;
+}
+@media (max-width: 700px) {
+  .verified-card {
+    padding: 18px;
+  }
+  .verified-card h2 {
+    font-size: 22px;
+  }
+}
