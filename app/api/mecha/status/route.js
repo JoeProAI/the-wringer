@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDaytona } from "../../../../lib/daytona";
+import { sendMechaDeliverable } from "../../../../lib/email";
 
 export async function POST(req) {
   const body = await req.json();
@@ -61,13 +62,43 @@ export async function POST(req) {
     report = JSON.parse(buf.toString("utf-8"));
   } catch {}
 
+  // When the run completes and we have a report, send the deliverable email
+  // exactly once. The email-sent label tracks idempotency so status polling
+  // does not re-send. Email failures are logged but do not block the result.
+  let emailSent = false;
+  if (report && sessionId && labels["email-sent"] !== "true") {
+    const emailResult = await sendMechaDeliverable({
+      report,
+      sessionId,
+      runId,
+    });
+    emailSent = emailResult.sent;
+    if (emailResult.sent) {
+      try {
+        await sandbox.setLabels({ ...labels, "email-sent": "true" });
+      } catch {
+        // Label update failed - email may be sent again on next poll, but
+        // that's better than blocking the run.
+      }
+    }
+    // Log email result for debugging (no sensitive data)
+    if (!emailResult.sent && emailResult.reason) {
+      console.log(`[mecha-email] run=${runId} skipped: ${emailResult.reason}`);
+    }
+  }
+
   if (report) {
     try {
       await sandbox.stop();
     } catch {}
   }
 
-  return NextResponse.json({ done: !!report, progress, report });
+  return NextResponse.json({
+    done: !!report,
+    progress,
+    report,
+    emailSent: emailSent || labels["email-sent"] === "true",
+  });
 }
 
 export const maxDuration = 60;
