@@ -943,13 +943,15 @@ details.worker pre.output { border: 0; border-top: 1px solid var(--line); margin
   color: var(--paper-dim);
   font-size: 16px;
   margin: 0 0 32px;
-  max-width: 600px;
+  max-width: 700px;
 }
-.examples-grid {
+
+/* Two-up row for Coach + Audit */
+.examples-tiers-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 .example-tier {
   background: #1f1812;
@@ -958,9 +960,9 @@ details.worker pre.output { border: 0; border-top: 1px solid var(--line); margin
   display: flex;
   flex-direction: column;
 }
-.example-tier-feature {
-  border: 2px solid var(--red);
-  grid-column: span 1;
+.example-tier-compact .example-pre {
+  max-height: 180px;
+  font-size: 11px;
 }
 .example-tier-head {
   display: flex;
@@ -1013,33 +1015,8 @@ details.worker pre.output { border: 0; border-top: 1px solid var(--line); margin
   overflow: auto;
   margin: 0;
 }
-.example-gallery {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-}
-.example-img {
-  height: 140px;
-  width: auto;
-  border: 1px solid var(--line);
-  flex-shrink: 0;
-  cursor: pointer;
-  transition: transform 0.15s, border-color 0.15s;
-}
-.example-img:hover {
-  border-color: var(--red);
-  transform: scale(1.02);
-}
-.example-img:focus {
-  outline: 2px solid var(--red);
-  outline-offset: 2px;
-}
-.example-note {
-  font-size: 12px;
-  color: var(--paper-mut);
-  margin: 10px 0 0;
-  font-style: italic;
+.example-pre-tall {
+  max-height: 320px;
 }
 .example-cta {
   margin-top: auto;
@@ -1054,6 +1031,163 @@ details.worker pre.output { border: 0; border-top: 1px solid var(--line); margin
   border-color: var(--paper);
   color: var(--paper);
 }
+
+/* MECHA section: full-width with stage */
+.example-mecha-section {
+  background: #1f1812;
+  border: 2px solid var(--red);
+  padding: 28px;
+  margin-bottom: 40px;
+}
+.example-mecha-head {
+  margin-bottom: 24px;
+}
+.example-mecha-head .example-desc {
+  margin-bottom: 0;
+  max-width: 700px;
+}
+.example-mecha-body {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) 1fr;
+  gap: 28px;
+  align-items: start;
+}
+.example-mecha-telemetry {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.example-mecha-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mecha-stat {
+  font-size: 11px;
+  padding: 5px 10px;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  color: var(--paper-dim);
+}
+.example-mecha-telemetry .example-cta {
+  margin-top: 8px;
+}
+
+/* Evidence Stage */
+.example-mecha-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.evidence-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.stage-main {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  cursor: pointer;
+}
+.stage-main:hover {
+  border-color: var(--red);
+}
+.stage-main:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+.stage-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--ink);
+}
+.stage-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--ink);
+}
+.stage-fallback-alt {
+  font-size: 14px;
+  color: var(--paper-mut);
+  text-align: center;
+}
+
+/* Filmstrip */
+.stage-filmstrip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) var(--ink);
+}
+.stage-filmstrip::-webkit-scrollbar {
+  height: 6px;
+}
+.stage-filmstrip::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+.stage-filmstrip::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+.stage-filmstrip::-webkit-scrollbar-thumb:hover {
+  background: var(--paper-mut);
+}
+.stage-thumb {
+  flex-shrink: 0;
+  width: 80px;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stage-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.stage-thumb:hover {
+  border-color: var(--paper-mut);
+}
+.stage-thumb:focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+}
+.stage-thumb-active {
+  border-color: var(--red);
+  border-width: 2px;
+}
+.thumb-fallback {
+  font-size: 12px;
+  color: var(--paper-mut);
+}
+.stage-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.stage-actions .btn-stamp,
+.stage-actions .btn-ghost {
+  text-decoration: none;
+}
+
+/* Exit codes */
 .examples-exit-codes {
   border-top: 1px solid var(--line);
   padding-top: 32px;
@@ -1086,31 +1220,50 @@ details.worker pre.output { border: 0; border-top: 1px solid var(--line); margin
   color: var(--paper-dim);
   line-height: 1.45;
 }
-@media (max-width: 1000px) {
-  .examples-grid {
-    grid-template-columns: 1fr;
+
+/* Compact Evidence Stage (for content pages) */
+.evidence-stage-compact .stage-main {
+  max-width: 640px;
+}
+.evidence-stage-compact .stage-thumb {
+  width: 64px;
+}
+.evidence-stage-compact .stage-filmstrip {
+  max-width: 640px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .stage-thumb,
+  .stage-main {
+    transition: none;
   }
-  .example-tier-feature {
-    grid-column: span 1;
+}
+
+/* Responsive: Examples */
+@media (max-width: 1000px) {
+  .example-mecha-body {
+    grid-template-columns: 1fr;
   }
   .exit-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .examples {
     padding: 40px 16px 48px;
+  }
+  .examples-tiers-row {
+    grid-template-columns: 1fr;
+  }
+  .example-mecha-section {
+    padding: 20px;
   }
   .exit-grid {
     grid-template-columns: 1fr;
   }
-  .example-gallery {
-    flex-direction: column;
-  }
-  .example-img {
-    height: auto;
-    width: 100%;
-    max-width: 100%;
+  .stage-thumb {
+    width: 72px;
   }
 }
 
