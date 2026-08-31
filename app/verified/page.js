@@ -117,13 +117,103 @@ export default function VerifiedPage() {
         ))}
       </div>
 
+      <h2>What the output looks like</h2>
+      <p>
+        The work orders above are the input. Below is what you actually get back from a MECHA run.
+        This is the real output from the sky-blue case, run by the operator with a triumvirate strategy.
+      </p>
+
+      <div className="verified-output">
+        <h3>MECHA Run Output (sky-blue case)</h3>
+        <div className="verified-output-stats">
+          <span className="verified-stat">EXIT 0 SUCCESS</span>
+          <span className="verified-stat">triumvirate strategy</span>
+          <span className="verified-stat">winner: Claude (confidence 0.9)</span>
+          <span className="verified-stat">model cost: $0.77 + $0.32 GAMMA</span>
+        </div>
+
+        <div className="verified-output-section">
+          <h4>GAMMA HQ Report (excerpt)</h4>
+          <pre className="verified-output-pre">{`# GAMMA REPORT
+
+The multi-agent run successfully verified that Earth's daytime sky appears blue 
+due to Rayleigh scattering. All three acceptance criteria were satisfied with 
+peer-reviewed citations.
+
+## Verdict
+
+Exit status: SUCCESS (0). All criteria passed verification.
+Winner: Candidate 1 (Claude) with confidence 0.9.
+
+The winning answer correctly identifies Rayleigh scattering as the mechanism, 
+cites authoritative sources (Bohren & Clothiaux, Young 1981), and explains the 
+wavelength-dependent intensity relationship (I ∝ 1/λ⁴).
+
+## Verification
+
+The customer can verify by:
+1. Checking the cited sources (NASA, HyperPhysics, Applied Optics)
+2. Confirming the 1/wavelength^4 relationship in any optics textbook
+3. Reviewing the cone-cell sensitivity data from CIE 1931 standards`}</pre>
+        </div>
+
+        <div className="verified-output-section">
+          <h4>HD Presentation (GAMMA)</h4>
+          <p className="verified-output-note">
+            The HD presentation uses GPT Image 2 to generate executive-grade slides. 
+            These are real slides from the operator run. Click any slide to open the full deck.
+          </p>
+          <div className="verified-gallery">
+            <a href="https://gamma.app/docs/587k5a9m9kd8kt5" target="_blank" rel="noopener noreferrer">
+              <img 
+                src="/examples/gamma-example-cover.png" 
+                alt="GAMMA report cover: Exit SUCCESS, reviewer confidence 0.9, winner Claude"
+                className="verified-gallery-img"
+                loading="lazy"
+              />
+            </a>
+            <a href="https://gamma.app/docs/587k5a9m9kd8kt5" target="_blank" rel="noopener noreferrer">
+              <img 
+                src="/examples/gamma-example-content.png" 
+                alt="Rayleigh scattering explanation with scientific citations"
+                className="verified-gallery-img"
+                loading="lazy"
+              />
+            </a>
+            <a href="https://gamma.app/docs/587k5a9m9kd8kt5" target="_blank" rel="noopener noreferrer">
+              <img 
+                src="/examples/gamma-example-refs.png" 
+                alt="References and conclusion slide"
+                className="verified-gallery-img"
+                loading="lazy"
+              />
+            </a>
+          </div>
+          <div className="verified-actions">
+            <a 
+              href="https://gamma.app/docs/587k5a9m9kd8kt5" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="btn-stamp"
+            >
+              View HD Presentation
+            </a>
+            <a 
+              href="https://assets.api.gamma.app/export/pdf/587k5a9m9kd8kt5/f1ecf4b45609e28c9b794b26153b6e99/MECHA-Run-Report-mecha-1788103355-4bd3f4.pdf" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="btn-ghost"
+            >
+              Download PDF
+            </a>
+          </div>
+        </div>
+      </div>
+
       <h2>What these show</h2>
       <p>
         A Wringer contract has a goal, checkable criteria, and boundaries. The audit stress-tests
-        the contract. A MECHA run executes it in a sandbox and grades the result. These cases let
-        you see the shape of the output before you spend.
-      </p>
-      <p>
+        the contract. A MECHA run executes it in a sandbox and grades the result. 
         Every case here is a question a stranger can verify with public sources. That is the
         standard: if you cannot prove it without guessing, it is not a real check.
       </p>

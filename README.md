@@ -28,6 +28,8 @@ Fill out your agent mission contract and put it through **LOOP PROTOCOL v5.0**:
 - `XAI_MODEL` / `WRINGER_GROK_MODEL` — optional, default `grok-4.5`
 - `GAMMA_APP_API_KEY` — Gamma.app API key. Injected into the Daytona sandbox. Without it, HD presentation silently skips.
 - `GAMMA_MODEL` — OpenRouter model for the HQ text GAMMA report. Default `anthropic/claude-opus-4.1`. Note: presentation images use Gamma `imageOptions.model=gpt-image-2`, which is not configurable via env var.
+- `RESEND_API_KEY` — Resend API key for sending MECHA deliverable emails. When set, customers receive their GAMMA report and presentation links via email after a paid run completes. Without it, email silently skips but in-session results still work.
+- `RESEND_FROM_ADDRESS` — From address for deliverable emails. Default `reports@thewringer.ai`. Must be a verified sender on your Resend domain.
 
 
 ## Grok coach rate limit

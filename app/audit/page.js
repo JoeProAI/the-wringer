@@ -54,6 +54,40 @@ export default function AuditPage() {
         the form. Review it, edit it, and you are ready to run.
       </p>
 
+      <h3>Example audit output</h3>
+      <p>
+        This is what an audit verdict looks like. The auditor grades the contract, predicts the exit code,
+        and returns repaired criteria you can apply in one click.
+      </p>
+      <div className="content-example">
+        <pre className="content-example-pre">{`<verdict>
+  grade: A
+  predicted_exit: 0 SUCCESS
+  weakest_link: All criteria cite external sources; verification is possible.
+  one_fix: Add a check for wavelength-dependent scattering intensity formula.
+</verdict>
+
+--- Repaired Criteria ---
+
+[AUTO] Cite peer-reviewed source (Bohren & Clothiaux 2006 or equivalent 
+       physics textbook) defining Rayleigh scattering
+[AUTO] State the 1/wavelength^4 relationship for scattering intensity
+[AUTO] Explain cone-cell sensitivity difference: human eyes are more 
+       sensitive to blue (450-495nm) than violet (380-450nm)
+
+--- Dry Run Notes ---
+
+Iteration 1: Found NASA Science page on blue skies. Partial evidence.
+Iteration 2: Located HyperPhysics Rayleigh scattering page. Formula confirmed.
+Iteration 3: CIE 1931 cone sensitivity data found. All criteria satisfied.
+
+Predicted exit: SUCCESS. Contract is tight enough for a MECHA run.`}</pre>
+        <p className="content-example-note">
+          The audit does not execute the job. It stress-tests the contract so you can fix problems
+          before spending on a MECHA run.
+        </p>
+      </div>
+
       <h2>Why a $1 dry run beats a $10 burn</h2>
       <p>
         A MECHA run is real execution: a swarm of agents, a sandbox, model costs, minutes of your
