@@ -57,7 +57,7 @@ Copy `.env.example` and set only the providers needed for the flow being tested.
 | `STRIPE_SECRET_KEY` | Stripe server key. Never reaches the browser or sandbox. |
 | `WRINGER_COOKIE_SECRET` | At least 32 characters. Signs the short-lived HttpOnly payment cookie. |
 | `UPSTASH_REDIS_REST_URL` | HTTPS Upstash REST endpoint for atomic payment claims. |
-| `UPSTASH_REDIS_REST_TOKEN` | Upstash REST token. Server-only. |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash REST token. Server-only. Vercel Marketplace's `KV_REST_API_URL` and `KV_REST_API_TOKEN` aliases are also accepted. |
 | `OPENROUTER_API_KEY` | Quick Attack model access. It remains server-only. |
 | `OPENROUTER_MANAGEMENT_KEY` | Creates five-hour, per-run MECHA keys capped to the purchased run budget. It never reaches the sandbox. |
 | `OPENROUTER_MODEL` | Quick Attack model. Default `anthropic/claude-sonnet-4.5`. |

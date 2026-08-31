@@ -223,6 +223,10 @@ const redisEnv = {
   UPSTASH_REDIS_REST_URL: "https://redis.example",
   UPSTASH_REDIS_REST_TOKEN: "redis-token",
 };
+assert.ok(createRedisClaimLedger({
+  env: { KV_REST_API_URL: "https://redis.example", KV_REST_API_TOKEN: "redis-token" },
+  fetchImpl: redisFetch,
+}));
 const ledger = createRedisClaimLedger({ env: redisEnv, fetchImpl: redisFetch, randomUUID: () => "claim-audit" });
 const concurrent = await Promise.allSettled([
   ledger.begin({ ...auditEntitlement, sessionId: "cs_test_concurrent" }),
