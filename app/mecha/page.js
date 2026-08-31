@@ -75,8 +75,8 @@ export default function MechaPage() {
         <li><strong>Live telemetry</strong> as the workers fan out and report in</li>
         <li><strong>Exit code</strong> (SUCCESS, PARTIAL, NEEDS_HUMAN, STALLED) based on acceptance criteria</li>
         <li><strong>GAMMA HQ report</strong> synthesizing the run into an executive-grade Markdown document</li>
-        <li><strong>HD presentation</strong> with AI-generated imagery (GPT Image 2, 16:9)</li>
-        <li><strong>PDF export</strong> for archival or sharing</li>
+        <li><strong>Optional HD presentation</strong> with AI-generated imagery when scoped generation is available</li>
+        <li><strong>Optional PDF export</strong> for archival or sharing</li>
         <li><strong>Email copy</strong> of the deliverable to your checkout address</li>
       </ul>
 

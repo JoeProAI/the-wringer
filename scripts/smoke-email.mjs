@@ -165,6 +165,39 @@ async function testPartialReportNoCrash() {
   console.log("PASS: testPartialReportNoCrash");
 }
 
+async function testSafeLinksAndIdempotency() {
+  resetEnv();
+  process.env.RESEND_API_KEY = "re_test_fake";
+  let sent;
+  const result = await sendMechaDeliverable(
+    {
+      report: {
+        ...mockReport,
+        gamma_presentation_url: "javascript:alert(1)",
+        gamma_export_url: "https://gamma.app/export/safe.pdf",
+      },
+      sessionId: "cs_test_123",
+      runId: "test-run-123",
+    },
+    {
+      sessionEmail: "test@example.com",
+      resend: {
+        emails: {
+          send: async (...args) => {
+            sent = args;
+            return { data: { id: "email-1" } };
+          },
+        },
+      },
+    }
+  );
+  if (!result.sent) throw new Error("testSafeLinksAndIdempotency: expected sent=true");
+  if (sent[0].html.includes("javascript:")) throw new Error("testSafeLinksAndIdempotency: unsafe URL rendered");
+  if (!sent[0].html.includes("https://gamma.app/export/safe.pdf")) throw new Error("testSafeLinksAndIdempotency: safe URL missing");
+  if (sent[1].idempotencyKey !== "wringer-test-run-123") throw new Error("testSafeLinksAndIdempotency: idempotency key missing");
+  console.log("PASS: testSafeLinksAndIdempotency");
+}
+
 // Run all tests
 async function runTests() {
   try {
@@ -174,6 +207,7 @@ async function runTests() {
     await testSkipWhenNoEmail();
     await testEmptyReportNoCrash();
     await testPartialReportNoCrash();
+    await testSafeLinksAndIdempotency();
     
     console.log("\nEMAIL_SMOKE_OK - All email tests passed");
     resetEnv();

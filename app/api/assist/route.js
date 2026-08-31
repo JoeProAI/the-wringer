@@ -118,8 +118,7 @@ export async function POST(req) {
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const msg = data?.error?.message || data?.error || `Grok request failed (${res.status})`;
-      return NextResponse.json({ error: String(msg) }, { status: 502 });
+      return NextResponse.json({ error: "Grok coach is unavailable. Try again shortly." }, { status: 502 });
     }
 
     const content = data?.choices?.[0]?.message?.content || "";

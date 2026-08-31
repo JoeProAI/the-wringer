@@ -1,1 +1,14 @@
-Vendored snapshot of https://github.com/JoeProAI/mecha @ 04d53eb (main, https://github.com/JoeProAI/mecha/pull/3 — adds the count-aware `mega` strategy, wave concurrency, and tournament reviewer). Regenerate: tar czf mecha.tar.gz --exclude=__pycache__ --exclude=state --exclude='*.bak' --exclude=.git --transform 's,^,mecha/,' scripts bin README.md && base64 -w0 mecha.tar.gz > vendor/mecha.tar.gz.b64
+# MECHA cloud bundle
+
+`mecha.tar.gz.b64` and `mecha.manifest.json` are generated from the canonical `wringer-cloud` profile in the sibling MECHA source repository.
+
+From the workspace MECHA repository, generate and verify with:
+
+```text
+python profiles/wringer-cloud/build_bundle.py
+python profiles/wringer-cloud/build_bundle.py --check
+```
+
+The manifest pins the profile version, archive digest, every bundled file digest, the accepted context envelope, and the provider budget policy. The Wringer verifies the profile ID and archive SHA-256 before serving the MECHA start route.
+
+Do not hand-edit either generated artifact.

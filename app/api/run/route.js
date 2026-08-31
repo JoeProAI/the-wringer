@@ -1,76 +1,8 @@
-import { NextResponse } from "next/server";
-import { buildPrompt } from "../../../lib/protocol";
-import { verifyAndConsume } from "../../../lib/verify-payment";
-
-const RUN_INSTRUCTION = `THE WRINGER. You are The Wringer: a merciless protocol auditor and dry-run executor.
-1. Emit the acknowledged <contract> (repair any malformed ACs and say what you fixed).
-2. Audit it: flag every AC that is not mechanically checkable, every missing budget, every safety gap, every ambiguity that would force NEEDS_HUMAN.
-3. Simulate up to 5 iterations of the loop as a DRY RUN (no real tools - mark all observations as SIMULATED), following the iteration skeleton exactly.
-4. End with:
-<verdict>
-  grade: S | A | B | C | F
-  predicted_exit: <code + name>
-  weakest_link: <one sentence>
-  one_fix: <the single highest-leverage improvement to the contract>
-</verdict>
-5. After the verdict, emit ONE fenced JSON block the UI can apply back into the form. Use the repaired contract (not the weak original):
-\`\`\`json
-{
-  "repaired_form": {
-    "goal": "one sentence finished state",
-    "acs": [
-      {"text": "plain pass/fail check", "kind": "AUTO|HUMAN", "check": "optional how", "expect": "optional signal"}
-    ],
-    "nonGoals": "boundaries",
-    "maxIterations": 30,
-    "preauthorized": ""
-  }
-}
-\`\`\`
-No commentary inside the JSON fence. Be brutal but fair. Keep total output under 1400 words.`;
+import { runAudit } from "../../../lib/services/audit-service";
+import { handleJsonPost } from "../../../lib/services/http-service";
 
 export async function POST(req) {
-  const body = await req.json();
-  const { sessionId, form } = body || {};
-  if (!form || !form.goal || !String(form.goal).trim()) {
-    return NextResponse.json({ error: "Missing goal" }, { status: 400 });
-  }
-
-  if (process.env.FREE_MODE !== "true") {
-    const v = await verifyAndConsume(sessionId, "audit");
-    if (v?.error) return NextResponse.json({ error: v.error }, { status: v.status });
-  }
-
-  if (!process.env.OPENROUTER_API_KEY) {
-    return NextResponse.json({ error: "OpenRouter not configured" }, { status: 500 });
-  }
-  const model = process.env.OPENROUTER_MODEL || "anthropic/claude-sonnet-4.5";
-  const prompt = buildPrompt(form);
-
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      "Content-Type": "application/json",
-      "HTTP-Referer": process.env.SITE_URL || "https://the-wringer.vercel.app",
-      "X-Title": "The Wringer",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: 3000,
-      messages: [
-        { role: "system", content: prompt },
-        { role: "user", content: RUN_INSTRUCTION },
-      ],
-    }),
-  });
-  if (!res.ok) {
-    const detail = await res.text();
-    return NextResponse.json({ error: `OpenRouter error ${res.status}`, detail: detail.slice(0, 500) }, { status: 502 });
-  }
-  const data = await res.json();
-  const output = data.choices?.[0]?.message?.content || "";
-  return NextResponse.json({ output, model });
+  return handleJsonPost(req, runAudit, { paymentCookie: true });
 }
 
 export const maxDuration = 60;

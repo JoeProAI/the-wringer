@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "profileId": "wringer-cloud",
+  "profileVersion": "2026.08.24.2",
+  "archiveSha256": "e585bfea38bcef4eff2bdfbd055b5fbf7a337ca151938b322f2e740ed38b50f1",
+  "archiveBytes": 38548,
+  "files": [
+    {
+      "path": "mecha/profile.json",
+      "bytes": 744,
+      "sha256": "27fd1689d0472b76da0f572731db16d070494e6fa691d746c852896686a7c89d"
+    },
+    {
+      "path": "mecha/bin/mecha",
+      "bytes": 618,
+      "sha256": "9549d432872b4af89a32952c144d3ff77807feb3d44c15f5274003c743fd106e"
+    },
+    {
+      "path": "mecha/README.md",
+      "bytes": 1215,
+      "sha256": "9810a2c36d7bebe5dfe850004f41936d610a2d1a4747c2cb1cd897be410be9cd"
+    },
+    {
+      "path": "mecha/scripts/backends/__init__.py",
+      "bytes": 2130,
+      "sha256": "83b74370ffb19a210ee6c3d8705a30fbaf4b596b2e13c97424aa984fa69191ac"
+    },
+    {
+      "path": "mecha/scripts/backends/claude.py",
+      "bytes": 3475,
+      "sha256": "574139847fd8628262d286804d5f9380ba6ec2cc94a1e5cffdfc8b7f2f95bc34"
+    },
+    {
+      "path": "mecha/scripts/backends/codex.py",
+      "bytes": 4358,
+      "sha256": "63ccbb691e11a35899b109ea323df21373e6ada4b79f70fa104dda0f866c876d"
+    },
+    {
+      "path": "mecha/scripts/backends/hermes.py",
+      "bytes": 2353,
+      "sha256": "fd268d3aadab9756cc97e13241e12950e3e79905977080a702f918f4a34abd89"
+    },
+    {
+      "path": "mecha/scripts/backends/openclaw.py",
+      "bytes": 2811,
+      "sha256": "057a285cbdbfa5458c83fe6d3bc7f65d7a3998c7754c874db8841fd27786e1c7"
+    },
+    {
+      "path": "mecha/scripts/backends/openrouter.py",
+      "bytes": 6330,
+      "sha256": "600ca7db5c24b8410f0f10bd9fbdeef33bda9da0ac19aa8f1dba14dca7653cac"
+    },
+    {
+      "path": "mecha/scripts/backends/paperclip.py",
+      "bytes": 3647,
+      "sha256": "822fe1d4fa29c225e2886ea6667539eb83a7926f713c514866ecf337852c6988"
+    },
+    {
+      "path": "mecha/scripts/backends/quad_crew.py",
+      "bytes": 1875,
+      "sha256": "6429c3d08c4283ab814b1ba97868e40c003a699ff43ca8f35541453298bd6c90"
+    },
+    {
+      "path": "mecha/scripts/backends/types.py",
+      "bytes": 956,
+      "sha256": "c0c7afffaeb3cbe9c0d7a4223b7af15598e34bc6d0f262cd148eeccc397563b8"
+    },
+    {
+      "path": "mecha/scripts/backends/xai.py",
+      "bytes": 2731,
+      "sha256": "d645cc042727186ef8dff0c5bbfdad9f04f4d6e1cf870e1c596822c56c890e06"
+    },
+    {
+      "path": "mecha/scripts/budget.py",
+      "bytes": 6674,
+      "sha256": "ec2a022445c2688f887abd15385ffd882e4596e0af2260ab96e1b65fa489a518"
+    },
+    {
+      "path": "mecha/scripts/claw_client.py",
+      "bytes": 7944,
+      "sha256": "7d56a92af85e653d5689743c141e80ec48db2062d9561e45998e285de68af922"
+    },
+    {
+      "path": "mecha/scripts/dashboard/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "mecha/scripts/dashboard/index.html",
+      "bytes": 18942,
+      "sha256": "4bdeb5439f86a154f451c9b291546d68c5672028c8b23221c4fa673368892149"
+    },
+    {
+      "path": "mecha/scripts/dashboard/server.py",
+      "bytes": 10736,
+      "sha256": "106a4af92fc1e3a5e7847f65d11653f41074a470b7cc047fdd446b95771fe9e5"
+    },
+    {
+      "path": "mecha/scripts/events.py",
+      "bytes": 1860,
+      "sha256": "e56900739663842cd7f1894aa9784c6d8cc4b2f5a9ad5c01efb7f6f0de12047a"
+    },
+    {
+      "path": "mecha/scripts/mecha.py",
+      "bytes": 12010,
+      "sha256": "8fcfd5d87300023611db7616a21878840cc096c1825fa87ed2299bf23a669c21"
+    },
+    {
+      "path": "mecha/scripts/memory.py",
+      "bytes": 9139,
+      "sha256": "c7158e9f3452dfa2555be0c35c40a4072a663135b1ccce223905db8b937aceac"
+    },
+    {
+      "path": "mecha/scripts/strategies.py",
+      "bytes": 41980,
+      "sha256": "f8a3631f933831fb282d2de6fa7654efdff4acb984627095b0303b63a2060650"
+    }
+  ],
+  "memoryPolicy": {
+    "gbrain": "unavailable-from-cloud",
+    "acceptedContext": "explicit-bounded-envelope",
+    "maxContextChars": 20000
+  },
+  "budgetPolicy": {
+    "defaultRunMaxUsd": 5,
+    "estimatedWorkerUsd": 0.35,
+    "defaultMaxCompletionTokens": 6000,
+    "actualUsageRequired": true
+  }
+}
