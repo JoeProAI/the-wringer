@@ -284,7 +284,7 @@ assert.deepEqual(replayedMecha, {
   runId: "run-stable",
   strategy: "triumvirate",
   profileVersion: "2026.08.24.2",
-  maxCostUsd: 5,
+  maxCostUsd: 2.6,
 });
 
 const cookieEnv = {
