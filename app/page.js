@@ -6,9 +6,9 @@ export async function generateMetadata({ searchParams }) {
   const params = await searchParams;
   const isShare = Boolean(params?.draft) || Boolean(params?.session_id);
   return buildMetadata({
-    title: { absolute: "The Wringer | AI agent work orders, $1 audits, and MECHA runs" },
+    title: { absolute: "The Wringer | Agent-native work orders, audits, and MECHA runs" },
     description:
-      "Turn vague AI agent ideas into checkable work orders. Get a $1 audit that stress-tests the contract, or a $10 MECHA multi-agent run that has to prove the result.",
+      "Humans and AI agents build the same checkable work orders through native WebMCP tools, then run a $1 audit or a $10 MECHA case that has to prove the result.",
     path: "/",
     noIndex: isShare,
   });

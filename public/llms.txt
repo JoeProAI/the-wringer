@@ -2,7 +2,8 @@
 
 > Turn vague AI agent ideas into checkable work orders, then audit or execute them.
 
-The Wringer is a paid web tool at https://www.thewringer.ai. It turns plain English into a
+The Wringer is an agent-native web application at https://www.thewringer.ai. Humans and browser
+agents use the same visible work order state through native WebMCP. It turns plain English into a
 structured work order (goal, checkable acceptance criteria, boundaries), then offers two paid
 actions:
 
@@ -10,6 +11,17 @@ actions:
   plus a repaired work order you can apply in one click.
 - **$10+ MECHA Run**: real multi-agent execution in an isolated Daytona sandbox, with an
   evidence chain and an independent reviewer verdict.
+
+## WebMCP tools
+
+- `create_case_file`: update and save the visible work order
+- `review_case_file`: validate and compile the current work order
+- `run_quick_attack`: stage the $1 audit for human confirmation
+- `apply_audit_repairs`: apply the latest audit repairs to the visible form
+- `start_full_case`: stage a MECHA run for human confirmation
+- `get_full_case_status`: read progress and the final result already visible on the page
+
+Paid actions never create checkout or spend until the human confirms with the visible control.
 
 ## Key pages
 
@@ -31,6 +43,6 @@ actions:
 
 ## Notes for AI crawlers
 
-- Endpoints under /api/ are internal and are not documentation.
-- There is no public API or developer documentation site yet.
+- Endpoints under /api/ are internal. Browser agents should use the registered WebMCP tools.
+- Tool schemas and live page state are authoritative for agent interaction.
 - The canonical host is https://www.thewringer.ai (the apex domain redirects).

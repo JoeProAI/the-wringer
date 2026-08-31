@@ -3,9 +3,9 @@ import { Providers } from "./providers";
 import { SITE_URL, buildMetadata } from "../lib/seo";
 
 const homeMeta = buildMetadata({
-  title: "The Wringer | AI agent work orders, $1 audits, and MECHA runs",
+  title: "The Wringer | Agent-native work orders, audits, and MECHA runs",
   description:
-    "Turn vague AI agent ideas into checkable work orders. Get a $1 audit that stress-tests the contract, or a $10 MECHA multi-agent run that has to prove the result.",
+    "Humans and AI agents build the same checkable work orders through native WebMCP tools, then run a $1 audit or a $10 MECHA case that has to prove the result.",
   path: "/",
 });
 
@@ -32,7 +32,7 @@ const jsonLd = {
       name: "The Wringer",
       url: SITE_URL,
       description:
-        "Turn vague AI agent ideas into clear work orders, then audit or execute them with a multi-agent swarm.",
+        "Humans and AI agents build the same checkable work orders through WebMCP, then audit or execute them with a multi-agent swarm.",
       publisher: { "@type": "Organization", name: "The Wringer", url: SITE_URL },
     },
     {

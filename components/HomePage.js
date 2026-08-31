@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { buildContract, buildPrompt } from "../lib/protocol";
+import { abortableDelay, registerWebMcpTools } from "../lib/webmcp";
+import { createWebMcpTools } from "../lib/webmcp-tools";
+import { AUDIT_PRICE_CENTS, MECHA_BASE_PRICE_CENTS, mechaPriceCents } from "../lib/pricing";
 import {
   buildDraftShareUrl,
   clearDraftLocal,
@@ -17,11 +20,9 @@ import { track } from "../lib/analytics";
 import EvidenceStage, { GAMMA_SLIDES, GAMMA_DECK_URL, GAMMA_PDF_URL } from "./EvidenceStage";
 
 const EMPTY_AC = { text: "", kind: "AUTO", check: "", expect: "" };
+const ACTIVE_MECHA_KEY = "wringer_active_mecha_v1";
+const ACTIVE_MECHA_TTL_MS = 4 * 60 * 60 * 1000;
 
-const megaPriceCents = (a) => {
-  const n = Math.max(3, Math.min(100, Number(a) || 0));
-  return n <= 4 ? 1000 : Math.min(1000 + 35 * (n - 4), 4000);
-};
 const fmtUSD = (cents) => (cents % 100 === 0 ? `$${cents / 100}` : `$${(cents / 100).toFixed(2)}`);
 
 export default function Home() {
@@ -46,6 +47,9 @@ export default function Home() {
   const [draftNote, setDraftNote] = useState("");
   const [shareNote, setShareNote] = useState("");
   const [repairedPreview, setRepairedPreview] = useState(null);
+  const [activeMecha, setActiveMecha] = useState(null);
+  const [webMcpStatus, setWebMcpStatus] = useState("Checking native WebMCP...");
+  const webMcpActionsRef = useRef(null);
 
   const formState = useCallback(
     () => ({ goal, acs, nonGoals, maxIterations, preauthorized, mechaStrategy, mechaAgents }),
@@ -71,7 +75,7 @@ export default function Home() {
     return form;
   }, []);
 
-  const runWithSession = useCallback(async (sessionId, form) => {
+  const runWithSession = useCallback(async (sessionId, form, signal) => {
     setRunning(true);
     setError("");
     setStatus("IN THE WRINGER - auditing your work order...");
@@ -80,6 +84,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sessionId, form }),
+        signal,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Run failed");
@@ -100,43 +105,54 @@ export default function Home() {
     }
   }, []);
 
-  const pollMecha = useCallback(async (runId, sessionId) => {
-    for (let i = 0; i < 240; i++) {
-      await new Promise((r) => setTimeout(r, 5000));
-      try {
-        const res = await fetch("/api/mecha/status", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ runId, sessionId }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Status failed");
-        setMechaProgress(data.progress || []);
-        if (data.done && data.report) {
-          setMechaReport(data.report);
-          track("mecha_complete", {
-            exit_code: data.report.exit_code,
-            strategy: data.report.strategy,
-            cost_usd: Number(data.report.cost_usd || 0),
-          });
-          setStatus(
-            `MECHA RUN COMPLETE - exit ${data.report.exit_code} ${data.report.exit_name} · ${data.report.strategy} · $${Number(
-              data.report.cost_usd || 0
-            ).toFixed(4)} model cost`
-          );
-          setRunning(false);
-          return;
-        }
-      } catch (e) {
-        // keep polling
-      }
+  const readMechaStatus = useCallback(async (runId, sessionId, signal) => {
+    const res = await fetch("/api/mecha/status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ runId, sessionId }),
+      signal,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Status failed");
+    setMechaProgress(data.progress || []);
+    if (data.done && data.report) {
+      setMechaReport(data.report);
+      localStorage.removeItem(ACTIVE_MECHA_KEY);
+      track("mecha_complete", {
+        exit_code: data.report.exit_code,
+        strategy: data.report.strategy,
+        cost_usd: Number(data.report.cost_usd || 0),
+      });
+      setStatus(
+        `MECHA RUN COMPLETE - exit ${data.report.exit_code} ${data.report.exit_name} · ${data.report.strategy} · $${Number(
+          data.report.cost_usd || 0
+        ).toFixed(4)} model cost`
+      );
+      setRunning(false);
     }
-    setError("MECHA RUN timed out after 20 minutes of polling. The sandbox may still be working.");
-    setRunning(false);
+    return data;
   }, []);
 
+  const pollMecha = useCallback(
+    async (runId, sessionId, signal) => {
+      for (let i = 0; i < 240; i++) {
+        try {
+          await abortableDelay(5000, signal);
+          const data = await readMechaStatus(runId, sessionId, signal);
+          if (data.done && data.report) return data;
+        } catch (e) {
+          if (e?.name === "AbortError" || signal?.aborted) return null;
+        }
+      }
+      setError("MECHA RUN timed out after 20 minutes of polling. The sandbox may still be working.");
+      setRunning(false);
+      return null;
+    },
+    [readMechaStatus]
+  );
+
   const startMecha = useCallback(
-    async (sessionId, form) => {
+    async (sessionId, form, signal) => {
       setRunning(true);
       setError("");
       setMechaReport(null);
@@ -147,14 +163,19 @@ export default function Home() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sessionId, form }),
+          signal,
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "MECHA start failed");
+        setActiveMecha({ runId: data.runId, sessionId });
+        localStorage.setItem(ACTIVE_MECHA_KEY, JSON.stringify({ runId: data.runId, savedAt: Date.now() }));
         setStatus(`MECHA RUN LIVE - strategy ${data.strategy} fanning out in sandbox. This takes minutes, not seconds.`);
-        pollMecha(data.runId, sessionId);
+        pollMecha(data.runId, sessionId, signal);
       } catch (e) {
-        setError(e.message);
-        setStatus("");
+        if (e?.name !== "AbortError") {
+          setError(e.message);
+          setStatus("");
+        }
         setRunning(false);
       }
     },
@@ -166,19 +187,21 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get("session_id");
     const tier = params.get("tier");
+    const paid = params.get("paid") === "1";
     const draftParam = params.get("draft");
 
     if (params.get("canceled")) setStatus("Payment canceled. The Wringer waits.");
 
-    if (sessionId) {
+    if (sessionId || paid) {
       const saved = localStorage.getItem("wringer_form");
-      if (saved) {
+      if (saved && (tier === "audit" || tier === "mecha")) {
         try {
           const form = normalizeForm(JSON.parse(saved));
           applyForm(form, { save: true, note: "Restored checkout draft" });
           window.history.replaceState({}, "", "/");
-          if (tier === "mecha") startMecha(sessionId, form);
-          else runWithSession(sessionId, form);
+          const legacySessionId = paid ? undefined : sessionId || undefined;
+          if (tier === "mecha") startMecha(legacySessionId, form);
+          else runWithSession(legacySessionId, form);
           document.getElementById("results")?.scrollIntoView();
           return;
         } catch {
@@ -208,6 +231,22 @@ export default function Home() {
       );
     }
   }, [runWithSession, startMecha, applyForm]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(ACTIVE_MECHA_KEY) || "null");
+      if (saved?.runId && Date.now() - saved.savedAt < ACTIVE_MECHA_TTL_MS) {
+        setActiveMecha({ runId: saved.runId, sessionId: undefined });
+        setRunning(true);
+        setStatus("MECHA RUN - reconnecting to the active sandbox...");
+        pollMecha(saved.runId, undefined);
+      } else {
+        localStorage.removeItem(ACTIVE_MECHA_KEY);
+      }
+    } catch {
+      localStorage.removeItem(ACTIVE_MECHA_KEY);
+    }
+  }, [pollMecha]);
 
   // Autosave drafts while editing
   useEffect(() => {
@@ -319,9 +358,9 @@ export default function Home() {
     setStatus("Draft cleared.");
   }
 
-  function applyRepairs() {
-    if (!repairedPreview) return;
-    applyForm(
+  const applyRepairs = useCallback(() => {
+    if (!repairedPreview) return null;
+    const form = applyForm(
       {
         ...repairedPreview,
         mechaStrategy,
@@ -332,7 +371,8 @@ export default function Home() {
     setStatus("Audit repairs applied to the work order. Review, then run again or hit MECHA.");
     track("repairs_applied");
     document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+    return form;
+  }, [applyForm, repairedPreview, mechaStrategy, mechaAgents]);
 
   async function runAssist(e) {
     e?.preventDefault?.();
@@ -368,6 +408,204 @@ export default function Home() {
     }
   }
 
+  const createCaseFile = useCallback(
+    async (input) => {
+      const form = applyForm(
+        {
+          goal: input.goal,
+          acs: input.acceptance_criteria,
+          nonGoals: input.non_goals || "",
+          maxIterations: input.max_iterations ?? 30,
+          preauthorized: input.preauthorized || "",
+          mechaStrategy: input.strategy || "triumvirate",
+          mechaAgents: input.agents ?? 24,
+        },
+        { save: true, note: "Case file created through WebMCP" }
+      );
+      setError("");
+      setStatus("WebMCP created the case file. Review the visible work order before choosing a paid action.");
+      document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return {
+        ok: true,
+        action: "case_file_created",
+        case_file: {
+          goal: form.goal,
+          acceptance_criteria: form.acs,
+          non_goals: form.nonGoals,
+          max_iterations: form.maxIterations,
+          preauthorized: form.preauthorized,
+          strategy: form.mechaStrategy,
+          agents: form.mechaAgents,
+        },
+      };
+    },
+    [applyForm]
+  );
+
+  const reviewCaseFile = useCallback(async () => {
+    const form = formState();
+    if (!form.goal.trim()) throw new Error("Goal is required before reviewing a case file.");
+    const compiled = buildContract(form);
+    const findings = [];
+    const checks = form.acs.filter((criterion) => criterion.text.trim());
+    if (!checks.length) findings.push("Add at least one acceptance criterion.");
+    checks.forEach((criterion, index) => {
+      if (criterion.kind === "AUTO" && !criterion.check.trim()) {
+        findings.push(`AC-${index + 1} needs an explicit machine check.`);
+      }
+      if (!criterion.expect.trim()) {
+        findings.push(`AC-${index + 1} needs a falsifiable expected signal.`);
+      }
+    });
+    if (form.preauthorized.trim()) findings.push("Review the preauthorized outward actions before checkout.");
+    setContract(compiled);
+    setError("");
+    setStatus("WebMCP compiled the current case file for review. No paid action was started.");
+    document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    return {
+      ok: true,
+      action: "case_file_reviewed",
+      contract: compiled,
+      checks: checks.length,
+      findings,
+      ready_for_attack: checks.length > 0 && findings.length === 0,
+      available_tiers: [
+        { id: "audit", amount_cents: AUDIT_PRICE_CENTS, currency: "USD" },
+        { id: "mecha", starting_amount_cents: MECHA_BASE_PRICE_CENTS, currency: "USD" },
+      ],
+      paid_action_started: false,
+    };
+  }, [formState]);
+
+  const stageQuickAttack = useCallback(async () => {
+    const form = formState();
+    if (!form.goal.trim()) throw new Error("Goal is required before staging an Audit.");
+    saveDraftLocal(form);
+    setError("");
+    setStatus("WebMCP staged the $1 Audit. Confirm by pressing the visible Audit work order - $1 button. No checkout or charge has started.");
+    document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    return {
+      ok: true,
+      confirmation_required: true,
+      action: "audit_checkout",
+      tier: "audit",
+      price: { currency: "USD", amount_cents: AUDIT_PRICE_CENTS },
+      confirmation_control: "Audit work order - $1",
+      checkout_started: false,
+      charged: false,
+    };
+  }, [formState]);
+
+  const applyWebMcpRepairs = useCallback(async () => {
+    const form = applyRepairs();
+    if (!form) throw new Error("No audit repairs are currently available to apply.");
+    setError("");
+    return {
+      ok: true,
+      action: "audit_repairs_applied",
+      goal: form.goal,
+      checks: form.acs.length,
+    };
+  }, [applyRepairs]);
+
+  const stageFullCase = useCallback(
+    async ({ strategy, agents }) => {
+      const form = formState();
+      if (!form.goal.trim()) throw new Error("Goal is required before staging a MECHA run.");
+      const selectedAgents = strategy === "mega" ? agents ?? mechaAgents : mechaAgents;
+      const amountCents = strategy === "mega" ? mechaPriceCents(selectedAgents) : MECHA_BASE_PRICE_CENTS;
+      setMechaStrategy(strategy);
+      if (strategy === "mega") setMechaAgents(selectedAgents);
+      saveDraftLocal({ ...form, mechaStrategy: strategy, mechaAgents: selectedAgents });
+      setError("");
+      setStatus(
+        `WebMCP staged the ${fmtUSD(amountCents)} MECHA run (${strategy}${
+          strategy === "mega" ? `, ${selectedAgents} agents` : ""
+        }). Confirm with the visible MECHA button. No checkout or charge has started.`
+      );
+      document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return {
+        ok: true,
+        confirmation_required: true,
+        action: "mecha_checkout",
+        tier: "mecha",
+        strategy,
+        agents: strategy === "mega" ? selectedAgents : null,
+        price: { currency: "USD", amount_cents: amountCents },
+        confirmation_control: "MECHA run button",
+        checkout_started: false,
+        charged: false,
+      };
+    },
+    [formState, mechaAgents]
+  );
+
+  const getFullCaseStatus = useCallback(async () => {
+    const report = mechaReport;
+    const progress = mechaProgress.slice(-20).map((event) => ({
+      type: String(event.type || event.event || "event").slice(0, 64),
+      agent: String(event.agent || event.worker || event.name || "").slice(0, 80),
+      status: String(event.status || event.message || event.result || "").slice(0, 240),
+    }));
+    return {
+      ok: true,
+      action: "full_case_status",
+      running,
+      status: status || "No full case has started.",
+      error: error || null,
+      run_id: activeMecha?.runId || report?.run_id || null,
+      progress_events: mechaProgress.length,
+      progress,
+      done: Boolean(report),
+      result: report
+        ? {
+            exit_code: report.exit_code,
+            exit_name: report.exit_name,
+            strategy: report.strategy,
+            model_cost_usd: Number(report.cost_usd || 0),
+            elapsed_seconds: Number(report.elapsed_s || 0),
+            reviewer_excerpt: String(report.reviewer?.text || report.reviewer?.error || "").slice(0, 2000),
+            report_excerpt: String(report.report || "").slice(0, 2000),
+          }
+        : null,
+    };
+  }, [activeMecha, mechaReport, mechaProgress, running, status, error]);
+
+  webMcpActionsRef.current = {
+    createCaseFile,
+    reviewCaseFile,
+    runQuickAttack: stageQuickAttack,
+    applyAuditRepairs: applyWebMcpRepairs,
+    startFullCase: stageFullCase,
+    getFullCaseStatus,
+  };
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const invoke = (name) => (input, signal) => webMcpActionsRef.current[name](input, signal);
+    const tools = createWebMcpTools({
+      createCaseFile: invoke("createCaseFile"),
+      reviewCaseFile: invoke("reviewCaseFile"),
+      runQuickAttack: invoke("runQuickAttack"),
+      applyAuditRepairs: invoke("applyAuditRepairs"),
+      startFullCase: invoke("startFullCase"),
+      getFullCaseStatus: invoke("getFullCaseStatus"),
+    });
+
+    registerWebMcpTools({ tools, signal: controller.signal })
+      .then(({ supported, registered }) => {
+        if (controller.signal.aborted) return;
+        setWebMcpStatus(supported ? `Native WebMCP ready · ${registered} tools` : "Native WebMCP unavailable in this browser");
+      })
+      .catch((registrationError) => {
+        if (controller.signal.aborted) return;
+        setWebMcpStatus(`Native WebMCP error · ${registrationError.message}`);
+        controller.abort();
+      });
+
+    return () => controller.abort();
+  }, []);
+
   const mechaWinnerIdx = (() => {
     if (!mechaReport?.winner || !mechaReport.candidates) return -1;
     let n = 0;
@@ -386,7 +624,7 @@ export default function Home() {
   )}&url=${encodeURIComponent("https://www.thewringer.ai")}`;
 
   const megaOn = mechaStrategy === "mega";
-  const megaCents = megaPriceCents(mechaAgents);
+  const megaCents = mechaPriceCents(mechaAgents);
 
   return (
     <main>
@@ -410,6 +648,9 @@ export default function Home() {
             <a className="btn-outline" href="#how">
               How it works
             </a>
+          </div>
+          <div className="webmcp-status mono" role="status" aria-live="polite" aria-atomic="true">
+            {webMcpStatus}
           </div>
         </div>
       </section>
@@ -496,7 +737,7 @@ Repaired:
               </div>
               <p className="example-desc">
                 Real sandbox execution. Multiple agents take the job. A reviewer picks or merges the best. 
-                You get live telemetry, an exit code, the GAMMA HQ report, and an HD presentation.
+                You get live telemetry, an exit code, the GAMMA HQ report, and presentation links when available.
               </p>
             </div>
 
