@@ -3,6 +3,7 @@ import { buildMetadata } from "../../lib/seo";
 import { encodeDraftParam } from "../../lib/draft";
 import { VERIFIED_CASES } from "../../lib/verified-cases";
 import { SITE_URL } from "../../lib/seo";
+import EvidenceStage from "../../components/EvidenceStage";
 
 export const metadata = buildMetadata({
   title: "Verified Wringers",
@@ -161,52 +162,9 @@ The customer can verify by:
           <h4>HD Presentation (GAMMA)</h4>
           <p className="verified-output-note">
             The HD presentation uses GPT Image 2 to generate executive-grade slides. 
-            These are real slides from the operator run. Click any slide to open the full deck.
+            These are real slides from the operator run (8 slides total). Use the filmstrip below to browse or click the stage to open the full deck.
           </p>
-          <div className="verified-gallery">
-            <a href="https://gamma.app/docs/587k5a9m9kd8kt5" target="_blank" rel="noopener noreferrer">
-              <img 
-                src="/examples/gamma-example-cover.png" 
-                alt="GAMMA report cover: Exit SUCCESS, reviewer confidence 0.9, winner Claude"
-                className="verified-gallery-img"
-                loading="lazy"
-              />
-            </a>
-            <a href="https://gamma.app/docs/587k5a9m9kd8kt5" target="_blank" rel="noopener noreferrer">
-              <img 
-                src="/examples/gamma-example-content.png" 
-                alt="Rayleigh scattering explanation with scientific citations"
-                className="verified-gallery-img"
-                loading="lazy"
-              />
-            </a>
-            <a href="https://gamma.app/docs/587k5a9m9kd8kt5" target="_blank" rel="noopener noreferrer">
-              <img 
-                src="/examples/gamma-example-refs.png" 
-                alt="References and conclusion slide"
-                className="verified-gallery-img"
-                loading="lazy"
-              />
-            </a>
-          </div>
-          <div className="verified-actions">
-            <a 
-              href="https://gamma.app/docs/587k5a9m9kd8kt5" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="btn-stamp"
-            >
-              View HD Presentation
-            </a>
-            <a 
-              href="https://assets.api.gamma.app/export/pdf/587k5a9m9kd8kt5/f1ecf4b45609e28c9b794b26153b6e99/MECHA-Run-Report-mecha-1788103355-4bd3f4.pdf" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="btn-ghost"
-            >
-              Download PDF
-            </a>
-          </div>
+          <EvidenceStage compact />
         </div>
       </div>
 

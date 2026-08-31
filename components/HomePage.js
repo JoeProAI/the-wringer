@@ -14,6 +14,7 @@ import {
 import { extractRepairedForm } from "../lib/parse-audit";
 import { FAQS } from "../lib/faq";
 import { track } from "../lib/analytics";
+import EvidenceStage, { GAMMA_SLIDES, GAMMA_DECK_URL, GAMMA_PDF_URL } from "./EvidenceStage";
 
 const EMPTY_AC = { text: "", kind: "AUTO", check: "", expect: "" };
 
@@ -436,59 +437,59 @@ export default function Home() {
       <section className="examples" id="examples">
         <div className="examples-inner">
           <h2>What you actually get</h2>
-          <p className="examples-sub">Three tiers. Each does something different. Here is the real output from an operator-run case.</p>
+          <p className="examples-sub">Three tiers, each does something different. Free drafts the contract. $1 stress-tests it. $10+ runs the job in a sandbox and proves the result.</p>
 
-          <div className="examples-grid">
-            <div className="example-tier">
+          <div className="examples-tiers-row">
+            <div className="example-tier example-tier-compact">
               <div className="example-tier-head">
                 <span className="example-price">Free</span>
                 <h3>Grok Coach</h3>
               </div>
               <p className="example-desc">
-                Describe the job in plain English. Grok drafts a work order: goal, acceptance criteria, boundaries. 
-                You get the contract shape without paying.
+                Describe the job in plain English. Grok drafts goal, acceptance criteria, and boundaries. You get the contract shape without paying.
               </p>
               <div className="example-sample">
-                <div className="example-label mono">Sample work order output</div>
-                <pre className="example-pre">{`Goal: Confirm that Earth's daytime sky appears blue due to Rayleigh scattering
+                <div className="example-label mono">Sample output</div>
+                <pre className="example-pre">{`Goal: Confirm that Earth's daytime sky 
+appears blue due to Rayleigh scattering
 
 Acceptance Criteria:
-[AUTO] Cite a peer-reviewed physics source defining Rayleigh scattering
-[AUTO] Explain why shorter wavelengths scatter more than longer ones
-[AUTO] State why the sky appears blue rather than violet
+[AUTO] Cite peer-reviewed source
+[AUTO] Explain wavelength scattering
+[AUTO] State why blue, not violet
 
-Boundaries: No discussion of sunsets, no other planets`}</pre>
+Boundaries: No sunsets, no other planets`}</pre>
               </div>
-              <a className="btn-ghost example-cta" href="/verified">See full verified cases</a>
+              <a className="btn-ghost example-cta" href="/verified">See verified cases</a>
             </div>
 
-            <div className="example-tier">
+            <div className="example-tier example-tier-compact">
               <div className="example-tier-head">
                 <span className="example-price">$1</span>
                 <h3>Audit</h3>
               </div>
               <p className="example-desc">
-                Stress-tests the work order itself. Finds vague checks, missing boundaries, unverifiable claims. 
-                Returns a graded dry-run and a repaired contract.
+                Stress-tests the work order. Finds vague checks, missing boundaries, unverifiable claims. Returns a graded dry-run and repaired contract.
               </p>
               <div className="example-sample">
-                <div className="example-label mono">Sample audit verdict</div>
+                <div className="example-label mono">Sample verdict</div>
                 <pre className="example-pre">{`<verdict>
   grade: A
   predicted_exit: 0 SUCCESS
-  weakest_link: All criteria cite external sources; verification is possible.
-  one_fix: Add a check for wavelength-dependent scattering intensity formula.
+  one_fix: Add scattering intensity
 </verdict>
 
-Repaired criteria:
-[AUTO] Cite peer-reviewed source (Bohren & Clothiaux or equivalent)
-[AUTO] State 1/wavelength^4 relationship for scattering intensity
-[AUTO] Explain cone-cell sensitivity difference for blue vs violet`}</pre>
+Repaired:
+[AUTO] Cite Bohren & Clothiaux
+[AUTO] State 1/wavelength^4 law
+[AUTO] Explain cone-cell sensitivity`}</pre>
               </div>
-              <a className="btn-ghost example-cta" href="/audit">How the audit works</a>
+              <a className="btn-ghost example-cta" href="/audit">How audit works</a>
             </div>
+          </div>
 
-            <div className="example-tier example-tier-feature">
+          <div className="example-mecha-section">
+            <div className="example-mecha-head">
               <div className="example-tier-head">
                 <span className="example-price">$10+</span>
                 <h3>MECHA Run</h3>
@@ -497,9 +498,12 @@ Repaired criteria:
                 Real sandbox execution. Multiple agents take the job. A reviewer picks or merges the best. 
                 You get live telemetry, an exit code, the GAMMA HQ report, and an HD presentation.
               </p>
-              <div className="example-sample">
-                <div className="example-label mono">Sample MECHA telemetry</div>
-                <pre className="example-pre">{`[BOOT] mecha-1788103355-4bd3f4 strategy=triumvirate
+            </div>
+
+            <div className="example-mecha-body">
+              <div className="example-mecha-telemetry">
+                <div className="example-label mono">Live telemetry (sky-blue case)</div>
+                <pre className="example-pre example-pre-tall">{`[BOOT] mecha-1788103355-4bd3f4 strategy=triumvirate
 [FANOUT] triumvirate - 3 workers: Claude, Codex, Grok
 [WORKER] Claude (claude) engaged
 [WORKER] Codex (codex) engaged
@@ -514,95 +518,43 @@ Repaired criteria:
 [GAMMA] HQ report ready · $0.3171 · 63.7s
 [GAMMA] generating HD presentation
 [GAMMA] HD presentation ready · 100.6s`}</pre>
-              </div>
-              <div className="example-sample">
-                <div className="example-label mono">GAMMA HD presentation (operator example)</div>
-                <div className="example-gallery">
-                  <a 
-                    href="https://gamma.app/docs/587k5a9m9kd8kt5" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="example-img-link"
-                  >
-                    <img 
-                      src="/examples/gamma-example-cover.png" 
-                      alt="GAMMA report cover slide showing exit status SUCCESS, reviewer confidence 0.9, winner Claude"
-                      className="example-img"
-                      loading="lazy"
-                    />
-                  </a>
-                  <a 
-                    href="https://gamma.app/docs/587k5a9m9kd8kt5" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="example-img-link"
-                  >
-                    <img 
-                      src="/examples/gamma-example-content.png" 
-                      alt="GAMMA report content slide explaining Rayleigh scattering mechanism with citations"
-                      className="example-img"
-                      loading="lazy"
-                    />
-                  </a>
-                  <a 
-                    href="https://gamma.app/docs/587k5a9m9kd8kt5" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="example-img-link"
-                  >
-                    <img 
-                      src="/examples/gamma-example-refs.png" 
-                      alt="GAMMA report references and conclusion slide"
-                      className="example-img"
-                      loading="lazy"
-                    />
-                  </a>
+                <div className="example-mecha-stats">
+                  <span className="mecha-stat mono">EXIT 0 SUCCESS</span>
+                  <span className="mecha-stat mono">winner: Claude (0.9)</span>
+                  <span className="mecha-stat mono">$1.09 total</span>
                 </div>
-                <p className="example-note">
-                  Real operator-run MECHA case (sky-blue, triumvirate strategy). 
-                  Click any slide to open the full deck.
-                </p>
-                <div className="example-actions">
-                  <a 
-                    href="https://gamma.app/docs/587k5a9m9kd8kt5" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="btn-stamp"
-                  >
-                    View HD Presentation
-                  </a>
-                  <a 
-                    href="https://assets.api.gamma.app/export/pdf/587k5a9m9kd8kt5/f1ecf4b45609e28c9b794b26153b6e99/MECHA-Run-Report-mecha-1788103355-4bd3f4.pdf" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="btn-ghost"
-                  >
-                    Download PDF
-                  </a>
-                </div>
+                <a className="btn-ghost example-cta" href="/mecha">How MECHA runs work</a>
               </div>
-              <a className="btn-ghost example-cta" href="/mecha">How MECHA runs work</a>
+
+              <div className="example-mecha-stage">
+                <div className="example-label mono">HD presentation (8 slides)</div>
+                <EvidenceStage 
+                  slides={GAMMA_SLIDES} 
+                  deckUrl={GAMMA_DECK_URL} 
+                  pdfUrl={GAMMA_PDF_URL} 
+                />
+              </div>
             </div>
           </div>
 
           <div className="examples-exit-codes">
-            <h3>Exit codes explained</h3>
+            <h3>Exit codes</h3>
             <div className="exit-grid">
               <div className="exit-item">
                 <span className="exit-code mono">EXIT 0 SUCCESS</span>
-                <span className="exit-desc">Every acceptance criterion got real evidence. Rare and earned.</span>
+                <span className="exit-desc">Every criterion got real evidence. Rare and earned.</span>
               </div>
               <div className="exit-item">
                 <span className="exit-code mono">EXIT 1 PARTIAL</span>
-                <span className="exit-desc">Some criteria passed, some did not. Read what failed and why.</span>
+                <span className="exit-desc">Some passed, some did not. Read what failed.</span>
               </div>
               <div className="exit-item">
                 <span className="exit-code mono">EXIT 2 NEEDS_HUMAN</span>
-                <span className="exit-desc">The run hit a check that requires human judgment.</span>
+                <span className="exit-desc">Hit a check that requires human judgment.</span>
               </div>
               <div className="exit-item">
                 <span className="exit-code mono">EXIT 3 STALLED</span>
-                <span className="exit-desc">The swarm could not make progress. Contract may need work.</span>
+                <span className="exit-desc">No progress. Contract may need work.</span>
               </div>
             </div>
           </div>
