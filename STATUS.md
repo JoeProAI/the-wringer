@@ -1,5 +1,5 @@
 # The Wringer status
 
-**State:** Native WebMCP challenge build is public on `main` and live at `https://www.thewringer.ai`. Production health is fully configured; Chrome 150 discovered and executed all six tools. A 79.2-second 1080p demo master with Joe's ElevenLabs PVC narration and burned captions is ready at `C:\Projects\AI_Projects\outputs\the-wringer-webmcp-demo-youtube.mp4`. The original dirty checkout remains untouched.
+**State:** Native WebMCP challenge build is public on `main` and live at `https://www.thewringer.ai`. Production health is fully configured. A 71-second 1080p final cut now shows ChatGPT's real in-app browser operating The Wringer, with the popup removed, Joe's corrected ElevenLabs PVC narration, and burned captions. The upload master is `C:\Projects\AI_Projects\outputs\the-wringer-webmcp-demo-youtube-final.mp4`. The original dirty checkout remains untouched.
 
-**Next:** Review the video once, upload it publicly to YouTube, add the URL to `docs/submission.md`, paste the prepared entry into Devpost, and submit before September 3, 2026 at 1:00 PM PT. One PVC correction render remains within the approved cap if needed.
+**Next:** Review the final cut once, upload it publicly to YouTube, add the URL to `docs/submission.md`, paste the prepared entry into Devpost, and submit before September 3, 2026 at 1:00 PM PT. The approved PVC correction pass has been used.
