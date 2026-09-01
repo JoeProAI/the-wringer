@@ -14,7 +14,7 @@ AI agents can complete increasingly consequential work, but the instruction they
 
 The Wringer already helped humans turn rough requests into checkable work orders, stress-test those contracts, and execute them through a multi-agent MECHA run. WebMCP revealed the missing half of the product: the agent itself should be able to understand and operate that verification workflow without guessing at buttons, scraping the page, or creating a second agent-only interface.
 
-We built the challenge extension around one question: what if a website could help an agent challenge its own instructions before either the agent or the human trusted the outcome?
+I built the challenge extension around one question: what if a website could help an agent challenge its own instructions before either the agent or the human trusted the outcome?
 
 ## What it does
 
@@ -35,7 +35,7 @@ The normal interface remains fully functional in browsers without WebMCP.
 
 ## How we built it
 
-The Wringer is a Next.js 14 and React 18 application deployed on Vercel. We added a dedicated WebMCP adapter using the current `document.modelContext.registerTool()` API, strict JSON Schema inputs, registration `AbortSignal` cleanup, execution cancellation, accurate `readOnlyHint` metadata, and `untrustedContentHint` for provider-derived output.
+The Wringer is a Next.js 14 and React 18 application deployed on Vercel. I added a dedicated WebMCP adapter using the current `document.modelContext.registerTool()` API, strict JSON Schema inputs, registration `AbortSignal` cleanup, execution cancellation, accurate `readOnlyHint` metadata, and `untrustedContentHint` for provider-derived output.
 
 WebMCP is not a duplicate implementation. The human interface and browser tools operate the same React state, contract compiler, route adapters, application services, payment boundary, and MECHA runtime. Server routes remain thin adapters over reusable services.
 
@@ -49,7 +49,7 @@ The Wringer existed before the challenge. The canonical pre-challenge baseline i
 
 The biggest challenge was making WebMCP operate a real paid product rather than a disconnected demonstration. Once an agent can stage audits and multi-agent runs, schema validation alone is not enough. Authorization, payment redemption, replay behavior, ownership, provider credentials, cancellation, and human approval all become part of the tool contract.
 
-Our security review found several boundaries that were acceptable for a human-only prototype but unsafe for an agent-accessible workflow. Payment consumption needed to become atomic. Checkout callbacks needed to stop trusting request origins. Stripe session IDs needed protection as bearer capabilities. Sandbox credentials needed narrower transport. Provider output and links needed to be treated as untrusted. We fixed those issues before exposing the workflows.
+The security review found several boundaries that were acceptable for a human-only prototype but unsafe for an agent-accessible workflow. Payment consumption needed to become atomic. Checkout callbacks needed to stop trusting request origins. Stripe session IDs needed protection as bearer capabilities. Sandbox credentials needed narrower transport. Provider output and links needed to be treated as untrusted. I fixed those issues with Devin before exposing the workflows.
 
 WebMCP is also evolving. Chrome's testing implementation and current examples did not always present input schemas and execution arguments identically. Keeping all direct browser API usage in a small adapter, maintaining a capability smoke test, and verifying against Chrome 150 and ChatGPT's in-app browser prevented specification details from leaking throughout the application.
 
@@ -59,7 +59,7 @@ The final challenge was demonstration clarity. A successful tool call is invisib
 
 - Six focused native WebMCP tools operate the production product rather than a mock catalog or challenge-only page.
 - ChatGPT's in-app browser can create, review, repair, and stage a case against shared visible application state.
-- The free judge flow reveals two concrete verification gaps, repairs them, and reaches the approval boundary without purchase or provider inference.
+- The free judge flow reveals two concrete verification gaps, repairs them, and reaches the approval boundary without purchasing a Wringer run or invoking a paid backend provider.
 - Paid and outward actions remain under human control. The agent cannot silently open checkout or spend money.
 - The UI and WebMCP paths share business logic instead of drifting into separate implementations.
 - Production health confirms the payment ledger, signed-cookie boundary, Stripe, Quick Attack, and Full Case provider boundaries are configured.
@@ -72,7 +72,7 @@ Agent-native does not mean adding a chatbot. It means publishing precise intenti
 
 A strict JSON Schema improves reliability, but it is not authorization. A valid tool call can still target the wrong resource, replay a paid entitlement, cross a user's ownership boundary, or trigger an irreversible action. The same authorization and audit expectations must apply whether the caller is a person, ChatGPT, or Devin.
 
-We also learned that human-agent collaboration needs a visual grammar. The Agent Docket tells the human what the agent called and what changed. The confirmation card makes the moment of responsibility unmistakable. Those interface elements did more for trust than exposing additional tools would have.
+I also learned that human-agent collaboration needs a visual grammar. The Agent Docket tells the human what the agent called and what changed. The confirmation card makes the moment of responsibility unmistakable. Those interface elements did more for trust than exposing additional tools would have.
 
 Finally, fewer complete tools beat a broad unfinished surface. Each submitted tool has a precise purpose, strict schema, structured result, lifecycle behavior, error path, metadata, test coverage, and documentation.
 
