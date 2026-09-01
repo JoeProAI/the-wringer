@@ -53,6 +53,17 @@ Judges can use either:
 - Foreign and missing runs return the same not-found response.
 - No WebMCP tool exposes arbitrary commands, files, environment values, URLs, models, or provider selection.
 
+## Browser verification
+
+Chrome 150 was launched with WebMCP enabled against the production build. `document.modelContext.getTools()` returned all six named tools with their titles and annotations. The browser then executed this real sequence through `document.modelContext.executeTool()`:
+
+1. `create_case_file` wrote a password-reset work order into the visible form.
+2. `review_case_file` returned two concrete gaps: no machine check and no falsifiable expected signal.
+3. `create_case_file` replaced the weak criterion with an explicit duplicate-request check and expected outcome.
+4. `run_quick_attack` returned `confirmation_required: true` while the Agent Docket displayed the pending $1 action and no checkout started.
+
+The final DOM contained the repaired goal, five recorded tool events across the verification session, and the human confirmation card.
+
 ## Local verification
 
 ```text
