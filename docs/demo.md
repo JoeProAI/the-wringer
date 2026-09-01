@@ -1,6 +1,6 @@
 # Winning demo cut
 
-Target: 75 to 90 seconds. One prompt, one visible defect, one human-controlled spend boundary, one repaired result.
+Target: 60 to 75 seconds. No purchase is required. One prompt, one visible defect, one repair, one human-controlled spend boundary.
 
 ## 0:00 to 0:08: Prove native WebMCP
 
@@ -10,21 +10,25 @@ Narration:
 
 > Most agents guess their way through websites. The Wringer publishes typed capabilities instead.
 
-## 0:08 to 0:25: Agent creates shared product state
+## 0:08 to 0:32: Agent creates, reviews, and repairs shared state
 
 Tell the browser agent:
 
-> Turn this into a Wringer case file and review it: refactor password reset so a user cannot trigger a second email while the first reset link is still valid. Prove it works. Do not redesign anything or contact real customers.
+> Turn this into a Wringer case file, review what cannot be verified, then repair those gaps by updating the case file again: refactor password reset so a user cannot trigger a second email while the first reset link is still valid. Do not redesign anything or contact real customers.
 
-The agent calls `create_case_file`, then `review_case_file`.
+The intended tool sequence is:
 
-Keep the Agent Docket and form in frame. The docket records both tool calls while the same visible form fills in. The free readiness review should expose the missing concurrency check or another concrete verification gap.
+1. `create_case_file` writes the first structured work order into the visible form.
+2. `review_case_file` exposes the missing concurrency check, machine check, or falsifiable expected signal.
+3. `create_case_file` replaces the weak draft with the repaired version.
 
-## 0:25 to 0:42: Make human control unmistakable
+Keep the Agent Docket and form in frame. The docket records every tool call while the same visible form changes. This entire loop is free and deterministic.
+
+## 0:32 to 0:52: Make human control unmistakable
 
 Say:
 
-> Put it through a Quick Attack.
+> Stage a Quick Attack on the repaired case.
 
 The agent calls `run_quick_attack`. Show both:
 
@@ -33,39 +37,26 @@ The agent calls `run_quick_attack`. Show both:
 
 Narration:
 
-> The agent can prepare paid work. It cannot spend for me.
+> The agent can understand the product, repair the work, and prepare a paid action. It cannot spend for me.
 
-Click **Confirm and continue** using Stripe test mode or an approved press pass.
+Do not click the confirmation button in the judge-facing demo. The point is that the agent stops correctly.
 
-## 0:42 to 1:10: Close the evidence loop
+## 0:52 to 1:05: Close the argument
 
-Show the real Quick Attack result and its verification defect. Ask:
-
-> Apply the repaired version.
-
-The agent calls `apply_audit_repairs`. The Agent Docket records the call and the repaired acceptance criteria replace the weak version in the same form.
+Pan across the Agent Docket, repaired acceptance criteria, and confirmation card in one frame.
 
 Narration:
 
-> WebMCP did not automate clicks. It let the agent understand the product, change shared state, stop at a spend boundary, and close the verification loop.
+> WebMCP did not automate clicks. It let the agent operate real product state and hand control back at the exact trust boundary.
 
-## 1:10 to 1:25: Prove it is not hardcoded
+## Optional proof cut
 
-Give one short second request from a different domain and show `create_case_file` updating the form again. Do not run another paid audit.
-
-## Final frame
-
-Keep these visible together:
-
-- Agent Docket with multiple tool calls.
-- Repaired work order.
-- Human confirmation boundary or audit verdict.
-- `Native WebMCP ready · 6 tools`.
+After the core 60-second story, add up to 15 seconds showing an existing verified MECHA result and evidence ledger. Do not make the paid provider run the main demo dependency.
 
 ## Recording rules
 
 - Keep the final video under three minutes and include narration.
 - Show the browser's discovered tool names in the first ten seconds.
-- Use only Stripe test mode, a press pass, or the explicitly approved provider cap.
+- Keep the free create-review-repair loop uncut so it cannot be mistaken for a prerecorded result.
 - Do not expose session IDs, email addresses, API keys, provider dashboards, or private infrastructure.
 - Avoid a long product tour. The mechanism is the story.

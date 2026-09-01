@@ -60,7 +60,8 @@ The challenge branch starts from production commit `642fd77`. The WebMCP registr
 2. Ask the browser agent to create a bounded work order. Example: "Add password reset to my existing app. Prove the reset email arrives within one minute and the new password signs in. Do not redesign anything or contact real customers."
 3. Confirm that `create_case_file` updates the visible form.
 4. Ask the agent to review the case and confirm `review_case_file` returns findings and the compiled contract.
-5. Ask it to stage a Quick Attack. Confirm the page requires a human click before checkout.
-6. Repeat with a different request to show the behavior is not hardcoded.
+5. Ask the agent to repair those findings by calling `create_case_file` again. Confirm the same visible form and Agent Docket update.
+6. Ask it to stage a Quick Attack. Confirm the page requires a human click before checkout.
+7. Repeat with a different request to show the behavior is not hardcoded.
 
 Judges do not need to purchase anything to verify the WebMCP implementation. Paid tools demonstrate the explicit human confirmation boundary without creating checkout or charges.
