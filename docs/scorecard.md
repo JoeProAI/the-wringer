@@ -13,12 +13,11 @@ Updated during the WebMCP Challenge implementation. Scores below 8 remain active
 | Agent usability | 9 | Strict schemas, titles, structured outputs, cancellation, free readiness findings, and bounded result data exist. |
 | Human usability | 9 | The existing interface remains usable while the Agent Docket and confirmation card make collaboration legible. |
 | Documentation | 9 | Architecture, eligibility boundary, setup, tool behavior, security, demo, and submission copy are documented. |
-| Submission readiness | 7 | Public source and preview exist; production promotion, public video, and Devpost entry remain. |
+| Submission readiness | 9 | Public source, MIT license, configured production domain, and deployed WebMCP proof exist; only the public video and Devpost entry remain. |
 
 ## Priority order
 
 1. Repeat the verified Chrome create-review-repair sequence in ChatGPT's in-app browser for the recording.
-2. Promote the reviewed commit to the public production domain after approval.
-3. Record the 60-to-75-second demo and upload it publicly.
-4. Paste the prepared submission copy into Devpost and submit before the deadline.
-5. Run the capped paid-provider smoke only if it can complete without delaying the free judge path.
+2. Record the 60-to-75-second demo and upload it publicly.
+3. Paste the prepared submission copy into Devpost and submit before the deadline.
+4. Run a Stripe test-mode purchase only if it can complete without delaying the free judge path.

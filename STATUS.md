@@ -1,5 +1,5 @@
 # The Wringer status
 
-**State:** Active WebMCP Challenge implementation on `feat/webmcp-challenge`, based on production commit `642fd77`. The original dirty checkout remains untouched.
+**State:** Native WebMCP challenge build is public on `main` and live at `https://www.thewringer.ai`. Production health is fully configured; Chrome 150 discovered all six tools and executed the deployed create-review-repair-confirmation flow. The original dirty checkout remains untouched.
 
-**Next:** Finish independent security and browser review, configure an atomic Upstash Redis claim store, verify WebMCP in ChatGPT's browser or Chrome 149+, then obtain approval to push, make the repository public, deploy, and submit before September 3, 2026 at 1:00 PM PT.
+**Next:** Record the 60-to-75-second ChatGPT in-app-browser demo, upload it publicly, paste `docs/submission.md` into Devpost, and submit before September 3, 2026 at 1:00 PM PT. A Stripe test-mode purchase remains optional and must not delay the free judge flow.

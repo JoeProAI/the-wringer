@@ -55,7 +55,7 @@ Judges can use either:
 
 ## Browser verification
 
-Chrome 150 was launched with WebMCP enabled against both the local production build and the public Vercel preview. `document.modelContext.getTools()` returned all six named tools with their titles and annotations. The deployed browser then executed this real sequence through `document.modelContext.executeTool()`:
+Chrome 150 was launched with WebMCP enabled against the local build, public Vercel preview, and `https://www.thewringer.ai` production deployment. `document.modelContext.getTools()` returned all six named tools with their titles and annotations. The deployed browser then executed this real sequence through `document.modelContext.executeTool()`:
 
 1. `create_case_file` wrote a password-reset work order into the visible form.
 2. `review_case_file` returned two concrete gaps: no machine check and no falsifiable expected signal.
