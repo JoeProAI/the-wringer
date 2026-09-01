@@ -53,6 +53,7 @@ assert.deepEqual(
   { supported: true, registered: 6 }
 );
 assert.equal(registrations.length, 6);
+assert.ok(registrations.every(({ tool }) => typeof tool.title === "string" && tool.title.length > 0));
 assert.ok(registrations.every(({ options }) => options.signal === registrationController.signal));
 
 const inspectSchema = (schema) => {

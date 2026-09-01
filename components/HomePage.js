@@ -49,6 +49,10 @@ export default function Home() {
   const [repairedPreview, setRepairedPreview] = useState(null);
   const [activeMecha, setActiveMecha] = useState(null);
   const [webMcpStatus, setWebMcpStatus] = useState("Checking native WebMCP...");
+  const [agentEvents, setAgentEvents] = useState([]);
+  const [agentReview, setAgentReview] = useState(null);
+  const [pendingAgentAction, setPendingAgentAction] = useState(null);
+  const agentEventId = useRef(0);
   const webMcpActionsRef = useRef(null);
 
   const formState = useCallback(
@@ -73,6 +77,14 @@ export default function Home() {
       }
     }
     return form;
+  }, []);
+
+  const recordAgentEvent = useCallback((tool, summary, state = "complete") => {
+    agentEventId.current += 1;
+    setAgentEvents((events) => [
+      ...events.slice(-5),
+      { id: agentEventId.current, tool, summary, state },
+    ]);
   }, []);
 
   const runWithSession = useCallback(async (sessionId, form, signal) => {
@@ -273,6 +285,7 @@ export default function Home() {
       return;
     }
     const form = formState();
+    setPendingAgentAction(null);
     localStorage.setItem("wringer_form", JSON.stringify(form));
     setRunning(true);
     setStatus("Opening payment gate...");
@@ -353,6 +366,9 @@ export default function Home() {
     setAssistTips([]);
     setRepairedPreview(null);
     setOutput("");
+    setAgentEvents([]);
+    setAgentReview(null);
+    setPendingAgentAction(null);
     setDraftNote("Draft cleared.");
     setShareNote("");
     setStatus("Draft cleared.");
@@ -423,7 +439,10 @@ export default function Home() {
         { save: true, note: "Case file created through WebMCP" }
       );
       setError("");
+      setAgentReview(null);
+      setPendingAgentAction(null);
       setStatus("WebMCP created the case file. Review the visible work order before choosing a paid action.");
+      recordAgentEvent("create_case_file", `Created the visible work order with ${form.acs.length} acceptance criteria.`);
       document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth", block: "start" });
       return {
         ok: true,
@@ -439,7 +458,7 @@ export default function Home() {
         },
       };
     },
-    [applyForm]
+    [applyForm, recordAgentEvent]
   );
 
   const reviewCaseFile = useCallback(async () => {
@@ -458,9 +477,16 @@ export default function Home() {
       }
     });
     if (form.preauthorized.trim()) findings.push("Review the preauthorized outward actions before checkout.");
+    const readyForAttack = checks.length > 0 && findings.length === 0;
+    setAgentReview({ findings, readyForAttack, checks: checks.length });
     setContract(compiled);
     setError("");
     setStatus("WebMCP compiled the current case file for review. No paid action was started.");
+    recordAgentEvent(
+      "review_case_file",
+      readyForAttack ? "Case passed the free readiness review." : `Found ${findings.length} verification gaps.`,
+      readyForAttack ? "complete" : "warning"
+    );
     document.getElementById("results")?.scrollIntoView({ behavior: "smooth", block: "start" });
     return {
       ok: true,
@@ -468,21 +494,27 @@ export default function Home() {
       contract: compiled,
       checks: checks.length,
       findings,
-      ready_for_attack: checks.length > 0 && findings.length === 0,
+      ready_for_attack: readyForAttack,
       available_tiers: [
         { id: "audit", amount_cents: AUDIT_PRICE_CENTS, currency: "USD" },
         { id: "mecha", starting_amount_cents: MECHA_BASE_PRICE_CENTS, currency: "USD" },
       ],
       paid_action_started: false,
     };
-  }, [formState]);
+  }, [formState, recordAgentEvent]);
 
   const stageQuickAttack = useCallback(async () => {
     const form = formState();
     if (!form.goal.trim()) throw new Error("Goal is required before staging an Audit.");
     saveDraftLocal(form);
     setError("");
-    setStatus("WebMCP staged the $1 Audit. Confirm by pressing the visible Audit work order - $1 button. No checkout or charge has started.");
+    setPendingAgentAction({
+      tier: "audit",
+      title: "$1 Quick Attack",
+      detail: "Stress-test this exact case file. Checkout and model work start only after you confirm.",
+    });
+    setStatus("WebMCP staged the $1 Audit. No checkout or charge has started.");
+    recordAgentEvent("run_quick_attack", "Staged a $1 Quick Attack and handed control back to the human.", "waiting");
     document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth", block: "start" });
     return {
       ok: true,
@@ -490,23 +522,26 @@ export default function Home() {
       action: "audit_checkout",
       tier: "audit",
       price: { currency: "USD", amount_cents: AUDIT_PRICE_CENTS },
-      confirmation_control: "Audit work order - $1",
+      confirmation_control: "WebMCP confirmation card",
       checkout_started: false,
       charged: false,
     };
-  }, [formState]);
+  }, [formState, recordAgentEvent]);
 
   const applyWebMcpRepairs = useCallback(async () => {
     const form = applyRepairs();
     if (!form) throw new Error("No audit repairs are currently available to apply.");
     setError("");
+    setAgentReview(null);
+    setPendingAgentAction(null);
+    recordAgentEvent("apply_audit_repairs", `Applied the repaired case with ${form.acs.length} acceptance criteria.`);
     return {
       ok: true,
       action: "audit_repairs_applied",
       goal: form.goal,
       checks: form.acs.length,
     };
-  }, [applyRepairs]);
+  }, [applyRepairs, recordAgentEvent]);
 
   const stageFullCase = useCallback(
     async ({ strategy, agents }) => {
@@ -518,10 +553,16 @@ export default function Home() {
       if (strategy === "mega") setMechaAgents(selectedAgents);
       saveDraftLocal({ ...form, mechaStrategy: strategy, mechaAgents: selectedAgents });
       setError("");
-      setStatus(
-        `WebMCP staged the ${fmtUSD(amountCents)} MECHA run (${strategy}${
-          strategy === "mega" ? `, ${selectedAgents} agents` : ""
-        }). Confirm with the visible MECHA button. No checkout or charge has started.`
+      setPendingAgentAction({
+        tier: "mecha",
+        title: `${fmtUSD(amountCents)} Full Case`,
+        detail: `${strategy}${strategy === "mega" ? ` · ${selectedAgents} agents` : ""}. Checkout and sandbox work start only after you confirm.`,
+      });
+      setStatus(`WebMCP staged the ${fmtUSD(amountCents)} MECHA run. No checkout or charge has started.`);
+      recordAgentEvent(
+        "start_full_case",
+        `Staged ${strategy}${strategy === "mega" ? ` with ${selectedAgents} agents` : ""} and handed control back to the human.`,
+        "waiting"
       );
       document.getElementById("work-order")?.scrollIntoView({ behavior: "smooth", block: "start" });
       return {
@@ -532,12 +573,12 @@ export default function Home() {
         strategy,
         agents: strategy === "mega" ? selectedAgents : null,
         price: { currency: "USD", amount_cents: amountCents },
-        confirmation_control: "MECHA run button",
+        confirmation_control: "WebMCP confirmation card",
         checkout_started: false,
         charged: false,
       };
     },
-    [formState, mechaAgents]
+    [formState, mechaAgents, recordAgentEvent]
   );
 
   const getFullCaseStatus = useCallback(async () => {
@@ -625,6 +666,7 @@ export default function Home() {
 
   const megaOn = mechaStrategy === "mega";
   const megaCents = mechaPriceCents(mechaAgents);
+  const webMcpReady = webMcpStatus.startsWith("Native WebMCP ready");
 
   return (
     <main>
@@ -868,6 +910,62 @@ Repaired:
               {shareNote && <p className="field-help mono share-link">{shareNote}</p>}
             </div>
           )}
+
+          <section className="agent-docket" aria-labelledby="agent-docket-title">
+            <div className="agent-docket-head">
+              <div>
+                <span className="agent-docket-kicker mono">WebMCP · shared state</span>
+                <h3 id="agent-docket-title">Agent docket</h3>
+              </div>
+              <span className={`agent-docket-state mono ${webMcpReady ? "ready" : ""}`}>
+                {webMcpReady ? "6 tools ready" : "WebMCP browser required"}
+              </span>
+            </div>
+            <p className="agent-docket-prompt">
+              Ask your browser agent: <q>Turn this request into a case file, then review what cannot be verified.</q>
+            </p>
+            <div className="agent-event-list" aria-live="polite">
+              {agentEvents.length === 0 ? (
+                <p className="agent-event-empty">No agent calls yet. Human controls remain fully available.</p>
+              ) : (
+                agentEvents.map((event) => (
+                  <div className={`agent-event ${event.state}`} key={event.id}>
+                    <span className="agent-event-tool mono">{event.tool}</span>
+                    <span>{event.summary}</span>
+                  </div>
+                ))
+              )}
+            </div>
+            {agentReview && (
+              <div className={`agent-review ${agentReview.readyForAttack ? "ready" : "warning"}`}>
+                <strong>{agentReview.readyForAttack ? "Ready for pressure" : `${agentReview.findings.length} verification gaps`}</strong>
+                {agentReview.findings.length > 0 ? (
+                  <ul>
+                    {agentReview.findings.map((finding) => <li key={finding}>{finding}</li>)}
+                  </ul>
+                ) : (
+                  <p>{agentReview.checks} checks have explicit methods and expected signals.</p>
+                )}
+              </div>
+            )}
+            {pendingAgentAction && (
+              <div className="agent-confirmation">
+                <div>
+                  <span className="agent-confirmation-label mono">Human confirmation required</span>
+                  <strong>{pendingAgentAction.title}</strong>
+                  <p>{pendingAgentAction.detail}</p>
+                </div>
+                <div className="agent-confirmation-actions">
+                  <button type="button" className="btn-stamp" onClick={() => wringerRun(pendingAgentAction.tier)} disabled={running}>
+                    Confirm and continue
+                  </button>
+                  <button type="button" className="btn-ghost" onClick={() => setPendingAgentAction(null)} disabled={running}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </section>
 
           <label>Goal</label>
           <p className="field-help">One plain sentence. What does done look like?</p>

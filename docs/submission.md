@@ -12,7 +12,7 @@ Put agent work on trial before you trust it.
 
 The Wringer turns vague requests into checkable work orders, pressure-tests them, and can execute the strongest version through a multi-agent MECHA run that must return evidence and an honest exit code.
 
-The WebMCP challenge extension makes those same product capabilities available as six structured browser tools. A human can tell an agent what they want in normal language. The agent discovers The Wringer's tools, creates the visible case file, reviews the verification gaps, stages a Quick Attack or Full Case, and applies the resulting repairs. The human sees and controls the same state throughout the workflow.
+The WebMCP challenge extension makes those same product capabilities available as six structured browser tools. A human can tell an agent what they want in normal language. The agent discovers The Wringer's tools, creates the visible case file, reviews the verification gaps, stages a Quick Attack or Full Case, and applies the resulting repairs. The on-page Agent Docket records each tool call, finding, and confirmation handoff so the human sees and controls the same state throughout the workflow.
 
 ## Why WebMCP is a strong fit
 

@@ -27,7 +27,7 @@ Every schema rejects unknown properties and bounds strings, arrays, iteration co
 
 ## Shared state
 
-The page remains authoritative for the active draft and visible result. A successful tool call updates the same React state and browser storage used by manual controls. A human can immediately inspect or change what the agent produced.
+The page remains authoritative for the active draft and visible result. A successful tool call updates the same React state and browser storage used by manual controls. The Agent Docket records the tool, outcome, readiness findings, and any pending confirmation so a human can immediately inspect or change what the agent produced.
 
 Paid actions are intentionally different from local state updates. An agent can prepare the exact action, but it cannot silently create a charge, start a sandbox, or authorize an outward action. The page displays the pending operation for human approval.
 

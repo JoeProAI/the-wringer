@@ -1,45 +1,71 @@
-# Three-minute demo
+# Winning demo cut
 
-## 0:00 to 0:25: The existing product
+Target: 75 to 90 seconds. One prompt, one visible defect, one human-controlled spend boundary, one repaired result.
 
-Open TheWringer.ai. Show the normal work-order form, $1 audit, and MECHA evidence stage. State that humans can still use every control directly.
+## 0:00 to 0:08: Prove native WebMCP
 
-## 0:25 to 1:10: Agent creates the case
+Open TheWringer.ai in ChatGPT's in-app browser. Show the six discovered tools before touching the form.
+
+Narration:
+
+> Most agents guess their way through websites. The Wringer publishes typed capabilities instead.
+
+## 0:08 to 0:25: Agent creates shared product state
 
 Tell the browser agent:
 
-> Turn my rough request into a Wringer case file: add password reset to an existing app, prove the email arrives within one minute and the new password signs in, don't redesign anything or contact real customers.
+> Turn this into a Wringer case file and review it: refactor password reset so a user cannot trigger a second email while the first reset link is still valid. Prove it works. Do not redesign anything or contact real customers.
 
-The agent discovers `create_case_file`, invokes it with structured arguments, and the visible form updates immediately. It then calls `review_case_file` and explains the returned validation and compiled contract.
+The agent calls `create_case_file`, then `review_case_file`.
 
-## 1:10 to 1:55: Agent operates the real workflow
+Keep the Agent Docket and form in frame. The docket records both tool calls while the same visible form fills in. The free readiness review should expose the missing concurrency check or another concrete verification gap.
 
-Ask:
+## 0:25 to 0:42: Make human control unmistakable
 
-> Put this through a Quick Attack.
+Say:
 
-The agent calls `run_quick_attack`. The Wringer displays the exact $1 operation and requires human confirmation. Use an approved test pass or prerecorded test-mode entitlement. Show the real audit result, then ask:
+> Put it through a Quick Attack.
+
+The agent calls `run_quick_attack`. Show both:
+
+- The tool response: `confirmation_required: true`, `checkout_started: false`, `charged: false`.
+- The Wringer confirmation card: the exact $1 action is staged, but nothing has been purchased.
+
+Narration:
+
+> The agent can prepare paid work. It cannot spend for me.
+
+Click **Confirm and continue** using Stripe test mode or an approved press pass.
+
+## 0:42 to 1:10: Close the evidence loop
+
+Show the real Quick Attack result and its verification defect. Ask:
 
 > Apply the repaired version.
 
-The agent calls `apply_audit_repairs`, and the same visible form updates.
+The agent calls `apply_audit_repairs`. The Agent Docket records the call and the repaired acceptance criteria replace the weak version in the same form.
 
-## 1:55 to 2:35: Second, non-hardcoded interaction
+Narration:
 
-Load a different verified case or dictate a different task. Ask the agent to configure a Full Case using `triumvirate`, then call `start_full_case`. Show the confirmation boundary and use a previously captured real run for progress if a live run would exceed the video window. Call `get_full_case_status` and show structured progress, evidence, verdict, and cost receipt reflected in the page.
+> WebMCP did not automate clicks. It let the agent understand the product, change shared state, stop at a spend boundary, and close the verification loop.
 
-## 2:35 to 2:55: Why WebMCP
+## 1:10 to 1:25: Prove it is not hardcoded
 
-Explain the difference in one sentence:
+Give one short second request from a different domain and show `create_case_file` updating the form again. Do not run another paid audit.
 
-> The agent did not guess coordinates or scrape button text. It discovered typed product capabilities, passed validated arguments, and operated the same state and services as the human interface.
+## Final frame
 
-End on the human-visible repaired case and evidence report.
+Keep these visible together:
+
+- Agent Docket with multiple tool calls.
+- Repaired work order.
+- Human confirmation boundary or audit verdict.
+- `Native WebMCP ready · 6 tools`.
 
 ## Recording rules
 
 - Keep the final video under three minutes and include narration.
-- Show the browser agent's discovered tool names at least once.
-- Use only test mode, a press pass, or an explicitly approved capped provider run.
-- Do not expose session IDs, email addresses, API keys, provider dashboards, or private repository details.
-- Use a second prompt so the demo cannot be mistaken for a hardcoded script.
+- Show the browser's discovered tool names in the first ten seconds.
+- Use only Stripe test mode, a press pass, or the explicitly approved provider cap.
+- Do not expose session IDs, email addresses, API keys, provider dashboards, or private infrastructure.
+- Avoid a long product tour. The mechanism is the story.
