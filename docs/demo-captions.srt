@@ -1,0 +1,51 @@
+1
+00:00:00,000 --> 00:00:07,500
+Agent work usually starts with a vague prompt and ends with an answer nobody can verify.
+
+2
+00:00:07,500 --> 00:00:12,000
+The Wringer changes that.
+
+3
+00:00:12,000 --> 00:00:18,500
+This is the live production site, and Chrome has discovered six native WebMCP tools.
+
+4
+00:00:18,500 --> 00:00:24,000
+First, the agent creates a case file.
+
+5
+00:00:24,000 --> 00:00:30,000
+The same form a human uses updates instantly.
+
+6
+00:00:30,000 --> 00:00:35,000
+Next, it reviews the case.
+
+7
+00:00:35,000 --> 00:00:43,500
+The Wringer catches two real gaps: there is no machine check, and no falsifiable expected signal.
+
+8
+00:00:43,500 --> 00:00:49,500
+The agent repairs both in the same shared state.
+
+9
+00:00:49,500 --> 00:00:55,000
+Now it stages a one-dollar Quick Attack.
+
+10
+00:00:55,000 --> 00:01:01,500
+Watch the boundary. Confirmation required. Checkout not started. Charged: false.
+
+11
+00:01:01,500 --> 00:01:09,000
+The agent can understand the product, improve the work, and prepare execution, but it cannot spend for me.
+
+12
+00:01:09,000 --> 00:01:15,000
+The normal interface still works without WebMCP, and both humans and agents use the same application services.
+
+13
+00:01:15,000 --> 00:01:19,200
+This is not remote-controlled clicking. The website publishes precise capabilities, the agent invokes them directly, and The Wringer keeps the human in control.
