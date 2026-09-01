@@ -90,7 +90,7 @@ Devin will be the first primary engineering provider behind a normalized adapter
 - Public source: https://github.com/JoeProAI/the-wringer
 - WebMCP documentation: https://github.com/JoeProAI/the-wringer/blob/main/docs/webmcp.md
 - Challenge change record: https://github.com/JoeProAI/the-wringer/blob/main/docs/hackathon-changes.md
-- Demo video: ADD PUBLIC YOUTUBE URL
+- Demo video: https://youtu.be/rsLChA95tQU
 
 ## Testing instructions
 
