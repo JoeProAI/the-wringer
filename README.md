@@ -18,7 +18,7 @@ WebMCP is part of The Wringer, not a separate demo. Humans and agents use the sa
 - `start_full_case`
 - `get_full_case_status`
 
-Paid tools stage the exact operation in the human interface. They never create checkout or spend without the user's visible confirmation. See [docs/webmcp.md](docs/webmcp.md), [docs/hackathon-changes.md](docs/hackathon-changes.md), [docs/demo.md](docs/demo.md), and [docs/scorecard.md](docs/scorecard.md).
+Paid tools stage the exact operation in the human interface. They never create checkout or spend without the user's visible confirmation. See [docs/webmcp.md](docs/webmcp.md), [docs/hackathon-changes.md](docs/hackathon-changes.md), [docs/demo.md](docs/demo.md), [docs/scorecard.md](docs/scorecard.md), and [docs/submission.md](docs/submission.md).
 
 ## Stack
 
