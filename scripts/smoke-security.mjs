@@ -10,6 +10,7 @@ import { handleJsonPost, PAYMENT_SESSION_COOKIE } from "../lib/services/http-ser
 import {
   CHECKOUT_NONCE_COOKIE,
   checkoutNonceHash,
+  requireCookieSecret,
   signPaymentSession,
 } from "../lib/services/payment-cookie-service.js";
 import { createRedisClaimLedger } from "../lib/services/payment-claim-service.js";
@@ -291,6 +292,10 @@ assert.deepEqual(replayedMecha, {
   maxCostUsd: 2.6,
 });
 
+assert.equal(
+  requireCookieSecret({ WRINGER_PREVIEW_COOKIE_SECRET: "preview-secret-0123456789abcdefghijkl" }),
+  "preview-secret-0123456789abcdefghijkl"
+);
 const cookieEnv = {
   NODE_ENV: "production",
   SITE_URL: "https://thewringer.ai",

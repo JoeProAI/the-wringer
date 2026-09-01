@@ -56,6 +56,7 @@ Copy `.env.example` and set only the providers needed for the flow being tested.
 | `SITE_URL` | Canonical origin. Production requires HTTPS and rejects paths, credentials, query, and fragments. |
 | `STRIPE_SECRET_KEY` | Stripe server key. Never reaches the browser or sandbox. |
 | `WRINGER_COOKIE_SECRET` | At least 32 characters. Signs the short-lived HttpOnly payment cookie. |
+| `WRINGER_PREVIEW_COOKIE_SECRET` | Optional preview-only fallback when Vercel scopes the production cookie secret away from preview deployments. |
 | `UPSTASH_REDIS_REST_URL` | HTTPS Upstash REST endpoint for atomic payment claims. |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash REST token. Server-only. Vercel Marketplace's `KV_REST_API_URL` and `KV_REST_API_TOKEN` aliases are also accepted. |
 | `OPENROUTER_API_KEY` | Quick Attack model access. It remains server-only. |
@@ -96,7 +97,7 @@ These checks are local and mocked. Do not call Stripe, OpenRouter, xAI, Daytona,
 1. Link the repository to the existing Vercel `the-wringer` project.
 2. Configure production secrets in Vercel. Never commit them.
 3. Keep Stripe in test mode until the complete callback, atomic claim, Quick Attack, and Full Case flows pass.
-4. Run all verification commands.
+4. Run all verification commands and verify `/api/health` reports every provider boundary configured.
 5. Deploy a preview and verify WebMCP in ChatGPT's browser and Chrome 149+.
 6. Promote the reviewed commit to production.
 
