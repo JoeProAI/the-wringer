@@ -55,14 +55,14 @@ Judges can use either:
 
 ## Browser verification
 
-Chrome 150 was launched with WebMCP enabled against the production build. `document.modelContext.getTools()` returned all six named tools with their titles and annotations. The browser then executed this real sequence through `document.modelContext.executeTool()`:
+Chrome 150 was launched with WebMCP enabled against both the local production build and the public Vercel preview. `document.modelContext.getTools()` returned all six named tools with their titles and annotations. The deployed browser then executed this real sequence through `document.modelContext.executeTool()`:
 
 1. `create_case_file` wrote a password-reset work order into the visible form.
 2. `review_case_file` returned two concrete gaps: no machine check and no falsifiable expected signal.
 3. `create_case_file` replaced the weak criterion with an explicit duplicate-request check and expected outcome.
 4. `run_quick_attack` returned `confirmation_required: true` while the Agent Docket displayed the pending $1 action and no checkout started.
 
-The final DOM contained the repaired goal, five recorded tool events across the verification session, and the human confirmation card.
+The final deployed DOM contained the repaired goal, four recorded tool events, and the human confirmation card.
 
 ## Local verification
 
